@@ -44,8 +44,17 @@ set_prop "gemini" "7.0" "NRD90M" "V8.2.2.0.NAACNEB"
 # Mi 5s
 set_prop "capricorn" "6.0.1" "MXB48T" "V8.2.4.0.MAGCNDL"
 
-#Mi 5s Plus
+# Mi 5s Plus
 set_prop "natrium" "6.0.1" "MXB48T" "V8.2.4.0.MBGCNDL"
 
-# Mi Mix
+# Mi MIX
 set_prop "lithium" "6.0.1" "MXB48T" "V8.2.3.0.MAHCNDL"
+
+# Mi Max
+set_prop "hydrogen" "6.0.1" "MMB29M" "V8.2.3.0.MBCCNDL"
+
+# Mi Max Prime
+set_prop "helium" "6.0.1" "MMB29M" "V8.2.3.0.MBDCNDL"
+
+# Redmi 3S/Prime/3X
+set_prop "land" "6.0.1" "MMB29M" "V8.1.5.0.MALCNDI"
