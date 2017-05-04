@@ -9,20 +9,22 @@ exec &> $MODDIR/post-fs-data.log
 
 set -x
 
+if [ -f "/magisk/.core/bin/resetprop" ]; then
+  RESETPROP="/magisk/.core/bin/resetprop"
+elif [ -f "/data/magisk/resetprop" ]; then
+  RESETPROP="/data/magisk/resetprop"
+else
+  exit 1
+fi
+
 get_prop() {
     cat /system/build.prop | sed -n "s/^$1=//p"
 }
 
 set_prop() {
     [ "`get_prop ro.product.name`" == "$1" ] || [ "`get_prop ro.product.device`" == "$1" ] || [ "`get_prop ro.build.product`" == "$1" ] && {
-        cat > $MODDIR/system.prop <<EOF
-# This file will be read by resetprop
-# Example: Change dpi
-# ro.sf.lcd_density=320
-ro.build.description=$1-user $2 $3 $4 release-keys
-ro.build.fingerprint=Xiaomi/$1/$1:$2/$3/$4:user/release-keys
-EOF
-        exit
+        $RESETPROP "ro.build.description" "$1-user $2 $3 $4 release-keys"
+        $RESETPROP "ro.build.fingerprint" "Xiaomi/$1/$1:$2/$3/$4:user/release-keys"
     }
 }
 
