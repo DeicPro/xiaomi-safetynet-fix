@@ -29,13 +29,13 @@ EOF
 # Redmi Note 2
 set_prop "hermes" "5.0.2" "LRX22G" "V8.2.1.0.LHMCNDL"
 
-# Redmi Note 3
+# Redmi Note 3 MTK
 set_prop "hennessy" "5.0.2" "LRX22G" "V8.2.1.0.LHNCNDL"
 
-# Redmi Note 3 Pro
+# Redmi Note 3 Qualcomm
 set_prop "kenzo" "6.0.1" "MMB29M" "V8.2.1.0.MHOCNDL"
 
-# Redmi Note 4
+# Redmi Note 4 MTK
 set_prop "nikel" "6.0" "MRA58K" "V8.2.2.0.MBFCNDL"
 
 # Mi 5
@@ -58,3 +58,21 @@ set_prop "helium" "6.0.1" "MMB29M" "V8.2.3.0.MBDCNDL"
 
 # Redmi 3S/Prime/3X
 set_prop "land" "6.0.1" "MMB29M" "V8.1.5.0.MALCNDI"
+
+# Mi 4c
+set_prop "libra" "5.1.1" "LMY47V" "V8.2.1.0.LXKCNDL"
+
+# Mi 5c
+set_prop "meri" "6.0" "MRA58K" "V8.1.15.0.MCJCNDI"
+
+# Redmi Note 3 Special Edition
+set_prop "kate" "6.0.1" "MMB29M" "V8.1.3.0.MHRMIDI"
+
+# Mi Note 2
+set_prop "scorpio" "6.0.1" "MXB48T" "V8.2.5.0.MADCNDL"
+
+# Redmi Note 4X
+set_prop "mido" "6.0.1" "MMB29M" "V8.2.18.0.MCFCNDL"
+
+# 
+#set_prop "" "" "" ""
