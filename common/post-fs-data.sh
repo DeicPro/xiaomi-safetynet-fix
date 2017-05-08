@@ -115,5 +115,14 @@ set_prop "virgo" "6.0.1" "MMB29M" "V8.1.4.0.MXEMIDI"
 # Mi 3/Mi 4
 set_prop "cancro" "6.0.1" "MMB29M" "V8.1.6.0.MXDMIDI"
 
+# Mi 2/2S
+set_prop "aries" "5.0.2" "LRX22G" "V8.1.3.0.LXAMIDI"
+
+# Mi Pad 2
+set_prop "latte" "5.1" "LMY47I" "V8.2.2.0.LACCNDL"
+
+# Mi Pad 3
+set_prop "cappu" "7.0" "NRD90M" "V8.2.8.0.NCICNEB"
+
 # 
 #set_prop "" "" "" ""

@@ -4,9 +4,10 @@ Fix SafetyNet on Xiaomi devices with MIUI Developer/Beta ROM & Custom ROM like L
 [Check XDA thread](https://forum.xda-developers.com/apps/magisk/xiaomi-safetynet-fix-t3600431)
 
 **Changelog**
+
 v1.6
 
--Added new supported devices: Mi Pad, Mi Note, Mi 3/Mi 4
+-Added new supported devices: Mi Pad, Mi Note, Mi 3/Mi 4, Mi 2/2S, Mi Pad 2, Mi Pad 3
 
 v1.5
 
