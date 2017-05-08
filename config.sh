@@ -2,21 +2,21 @@
 #
 # Magisk
 # by topjohnwu
-#
+# 
 # This is a template zip for developers
 #
 ##########################################################################################
 ##########################################################################################
-#
+# 
 # Instructions:
-#
+# 
 # 1. Place your files into system folder (delete the placeholder file)
 # 2. Fill in your module's info into module.prop
 # 3. Configure the settings in this file (common/config.sh)
 # 4. For advanced features, add shell commands into the script files under common:
 #    post-fs-data.sh, service.sh
 # 5. For changing props, add your additional/modified props into common/system.prop
-#
+# 
 ##########################################################################################
 
 ##########################################################################################
@@ -50,7 +50,7 @@ LATESTARTSERVICE=false
 
 print_modname() {
   ui_print "*******************************"
-  ui_print "        Xiaomi SafetyNet Fix v1.3"
+  ui_print "        Xiaomi SafetyNet Fix v1.4"
   ui_print "*******************************"
 }
 

@@ -5,16 +5,16 @@ MODDIR=${0%/*}
 
 # This script will be executed in post-fs-data mode
 # More info in the main Magisk thread
-exec &> $MODDIR/post-fs-data.log
+exec &> $MODDIR/xiaomi-safetynet-fix.log
 
 set -x
 
 if [ -f "/magisk/.core/bin/resetprop" ]; then
-  RESETPROP="/magisk/.core/bin/resetprop"
+    RESETPROP="/magisk/.core/bin/resetprop"
 elif [ -f "/data/magisk/resetprop" ]; then
-  RESETPROP="/data/magisk/resetprop"
+    RESETPROP="/data/magisk/resetprop"
 else
-  exit 1
+    exit 1
 fi
 
 get_prop() {
@@ -24,10 +24,17 @@ get_prop() {
 set_prop() {
     [ "$(get_prop ro.product.name)" == "$1" ] || [ "$(get_prop ro.product.device)" == "$1" ] || [ "$(get_prop ro.build.product)" == "$1" ] && {
         [ "$5" ] && { MODEL=$5; } || { MODEL=$1; }
-        $RESETPROP "ro.build.description" "$1-user $2 $3 $4 release-keys"
-        $RESETPROP "ro.build.fingerprint" "Xiaomi/$1/$1:$2/$3/$4:user/release-keys"
+       $RESETPROP "ro.build.fingerprint" "Xiaomi/$MODEL/$1:$2/$3/$4:user/release-keys"
+        tweaks_and_log &
         exit
     }
+}
+
+tweaks_and_log() {
+    while :; do [ "$(getprop sys.boot_completed)" == 1 ] && [ "$(getprop init.svc.magisk_service)" == stopped ] && break; sleep 1; done
+    [ "$(getprop persist.magisk.hide)" == 0 ] && /magisk/.core/magiskhide/enable
+    cat /cache/magisk.log
+    getprop
 }
 
 # Redmi Note 2
@@ -83,6 +90,12 @@ set_prop "wt88047" "5.1.1" "LMY47V" "V8.2.5.0.LHJCNDL"
 
 # Redmi 2/4G
 set_prop "HM2014811" "4.4.4" "KTU84P" "V8.2.3.0.KHJCNDL" "2014811"
+
+# Redmi 3/Prime
+set_prop "ido" "5.1.1" "LMY47V" "V8.1.3.0.LAIMIDI"
+
+# Mi 4i
+set_prop "ferrari" "5.0.2" "LRX22G" "V8.1.5.0.LXIMIDI"
 
 # 
 #set_prop "" "" "" ""
