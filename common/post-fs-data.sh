@@ -24,7 +24,7 @@ get_prop() {
 set_prop() {
     [ "$(get_prop ro.product.name)" == "$1" ] || [ "$(get_prop ro.product.device)" == "$1" ] || [ "$(get_prop ro.build.product)" == "$1" ] && {
         [ "$5" ] && { MODEL=$5; } || { MODEL=$1; }
-       $RESETPROP "ro.build.fingerprint" "Xiaomi/$MODEL/$1:$2/$3/$4:user/release-keys"
+        $RESETPROP "ro.build.fingerprint" "Xiaomi/$MODEL/$1:$2/$3/$4:user/release-keys"
         tweaks_and_log &
         exit
     }
