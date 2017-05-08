@@ -1,7 +1,7 @@
 id=xiaomi-safetynet-fix
 name=Xiaomi SafetyNet Fix
-version=v1.5
-versionCode=6
+version=v1.6
+versionCode=7
 author=Deiki
 description=Fix SafetyNet on Xiaomi devices with MIUI Developer/Beta ROM & Custom ROM like LOS, RR, etc.
 template=3

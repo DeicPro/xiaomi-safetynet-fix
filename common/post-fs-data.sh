@@ -106,5 +106,14 @@ set_prop "markw" "6.0.1" "MMB29M" "V8.2.4.0.MBEMIDL"
 # Redmi 4A
 set_prop "rolex" "6.0.1" "MMB29M" "V8.1.4.0.MCCMIDI"
 
+# Mi Pad
+set_prop "mocha" "4.4.4" "KTU84P" "V8.2.2.0.KXFCNDL"
+
+# Mi Note
+set_prop "virgo" "6.0.1" "MMB29M" "V8.1.4.0.MXEMIDI"
+
+# Mi 3/Mi 4
+set_prop "cancro" "6.0.1" "MMB29M" "V8.1.6.0.MXDMIDI"
+
 # 
 #set_prop "" "" "" ""
