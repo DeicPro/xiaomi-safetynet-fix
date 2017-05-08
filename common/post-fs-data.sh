@@ -97,5 +97,14 @@ set_prop "ido" "5.1.1" "LMY47V" "V8.1.3.0.LAIMIDI"
 # Mi 4i
 set_prop "ferrari" "5.0.2" "LRX22G" "V8.1.5.0.LXIMIDI"
 
+# Redmi 4
+set_prop "prada" "6.0.1" "MMB29M" "V8.1.5.0.MCECNDI"
+
+# Redmi 4 Prime
+set_prop "markw" "6.0.1" "MMB29M" "V8.2.4.0.MBEMIDL"
+
+# Redmi 4A
+set_prop "rolex" "6.0.1" "MMB29M" "V8.1.4.0.MCCMIDI"
+
 # 
 #set_prop "" "" "" ""

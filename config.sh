@@ -50,7 +50,7 @@ LATESTARTSERVICE=false
 
 print_modname() {
   ui_print "*******************************"
-  ui_print "        Xiaomi SafetyNet Fix v1.4"
+  ui_print "        Xiaomi SafetyNet Fix v1.5"
   ui_print "*******************************"
 }
 

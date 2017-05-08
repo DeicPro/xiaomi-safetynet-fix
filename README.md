@@ -5,13 +5,18 @@ Fix SafetyNet on Xiaomi devices with MIUI Developer/Beta ROM & Custom ROM like L
 
 **Changelog**
 
+v1.5
+-Added new supported devices: Redmi 4, Redmi 4 Prime, Redmi 4A
+
 v1.4
 
 -Added new supported devices: Redmi 3/Prime, Mi 4i
 
--Added code to generate useful code and enable Magisk Hide if not enabled.
+-Added code to generate useful code and enable Magisk Hide if not enabled
 
--Changed to use resetprop directly script
+-Changed to use resetprop directly from script
+
+-Removed build description because is useless
 
 v1.3
 
