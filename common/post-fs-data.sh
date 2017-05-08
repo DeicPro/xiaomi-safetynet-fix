@@ -31,8 +31,10 @@ set_prop() {
 }
 
 tweaks_and_log() {
+    while :; do [ "$(getprop persist.magisk.hide)" == 1 ] && { break; } || { setprop "persist.magisk.hide" "1"; }; sleep 1; done
     while :; do [ "$(getprop sys.boot_completed)" == 1 ] && [ "$(getprop init.svc.magisk_service)" == stopped ] && break; sleep 1; done
-    [ "$(getprop persist.magisk.hide)" == 0 ] && /magisk/.core/magiskhide/enable
+    /magisk/.core/magiskhide/disable
+    /magisk/.core/magiskhide/enable
     cat /cache/magisk.log
     getprop
 }

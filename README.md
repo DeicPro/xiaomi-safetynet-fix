@@ -8,6 +8,7 @@ Fix SafetyNet on Xiaomi devices with MIUI Developer/Beta ROM & Custom ROM like L
 v1.6
 
 -Added new supported devices: Mi Pad, Mi Note, Mi 3/Mi 4, Mi 2/2S, Mi Pad 2, Mi Pad 3
+-Added code to reinitiate Magisk Hide
 
 v1.5
 
