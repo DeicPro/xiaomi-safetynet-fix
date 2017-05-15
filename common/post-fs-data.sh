@@ -9,34 +9,70 @@ exec &> $MODDIR/xiaomi-safetynet-fix.log
 
 set -x
 
-if [ -f "/magisk/.core/bin/resetprop" ]; then
-    RESETPROP="/magisk/.core/bin/resetprop"
-elif [ -f "/data/magisk/resetprop" ]; then
-    RESETPROP="/data/magisk/resetprop"
-else
-    exit 1
-fi
+LOGFILE="/cache/magisk.log"
+
+log_print() {
+    echo "$1"
+    echo "$1" >> $LOGFILE
+    log -p i -t Magisk "$1"
+}
+
+if [ -f "/magisk/.core/bin/resetprop" ]; then RESETPROP="/magisk/.core/bin/resetprop"
+elif [ -f "/data/magisk/resetprop" ]; then RESETPROP="/data/magisk/resetprop"
+elif [ -f "/sbin/resetprop" ]; then RESETPROP="/sbin/resetprop"
+else exit 1; fi
 
 get_prop() {
+    set +x
     cat /system/build.prop | sed -n "s/^$1=//p"
+    set -x
 }
 
 set_prop() {
-    [ "$(get_prop ro.product.name)" == "$1" ] || [ "$(get_prop ro.product.device)" == "$1" ] || [ "$(get_prop ro.build.product)" == "$1" ] && {
-        [ "$5" ] && { MODEL=$5; } || { MODEL=$1; }
-        $RESETPROP "ro.build.fingerprint" "Xiaomi/$MODEL/$1:$2/$3/$4:user/release-keys"
-        tweaks_and_log &
+    set +x
+    [ "$(get_prop ro.product.name)" == "$1" ] || \
+    [ "$(get_prop ro.product.device)" == "$1" ] || \
+    [ "$(get_prop ro.build.product)" == "$1" ] && {
+        if [ "$5" ]; then MODEL="$5"; else MODEL="$1"; fi
+        set -x
+        $RESETPROP -v -n "ro.build.fingerprint" "Xiaomi/$MODEL/$1:$2/$3/$4:user/release-keys"
+        $RESETPROP -v -n "ro.bootimage.build.fingerprint" "Xiaomi/$MODEL/$1:$2/$3/$4:user/release-keys"
+        script_end &
         exit
     }
+    set -x
 }
 
-tweaks_and_log() {
-    while :; do [ "$(getprop persist.magisk.hide)" == 1 ] && { break; } || { setprop "persist.magisk.hide" "1"; }; sleep 1; done
-    while :; do [ "$(getprop sys.boot_completed)" == 1 ] && [ "$(getprop init.svc.magisk_service)" == stopped ] && break; sleep 1; done
-    /magisk/.core/magiskhide/disable
-    /magisk/.core/magiskhide/enable
-    cat /cache/magisk.log
+grep_logcat() {
+    set +x
+    while :; do logcat -d | grep "$1" && break; sleep 1; done
+    set -x
+}
+
+script_end() {
+    while :; do [ "$(getprop persist.magisk.hide)" == "0" ] && \
+    break || setprop "persist.magisk.hide" "0"; sleep 1; done
+    set +x
+    while :; do [ "$(getprop sys.boot_completed)" == "1" ] && \
+    [ "$(getprop init.svc.magisk_service)" == "stopped" ] && break; sleep 1; done
+    set -x
+    log_print "* Starting MagiskHide"
+    sh -x /magisk/.core/magiskhide/enable
+    setprop "persist.magisk.hide" "1"
     getprop
+    sleep 1
+    cat $LOGFILE
+    echo "Waiting for Magisk Manager SafetyNet check..."
+    grep_logcat "MANAGER: SN: Google API Connected"
+    grep_logcat "MANAGER: SN: Check with nonce"
+    grep_logcat "MANAGER: SN: Response"
+    grep_logcat "MANAGER: StatusFragment: SafetyNet UI refresh triggered"
+    echo "Waiting for MagiskHide unmount..."
+    while :; do grep "MagiskHide: Unmounted (/sbin)" "$LOGFILE" && \
+    grep "MagiskHide: Unmounted (/magisk)" "$LOGFILE" && break; sleep 1; done
+    sleep 1
+    MAGISKHIDE_LOG=$(grep -n -x "* Starting MagiskHide" "$LOGFILE")
+    /data/magisk/busybox tail +${MAGISKHIDE_LOG%%:*} "$LOGFILE"
 }
 
 # Redmi Note 2
@@ -126,5 +162,5 @@ set_prop "latte" "5.1" "LMY47I" "V8.2.2.0.LACCNDL"
 # Mi Pad 3
 set_prop "cappu" "7.0" "NRD90M" "V8.2.8.0.NCICNEB"
 
-# 
-#set_prop "" "" "" ""
+# Mi 6
+set_prop "sagit" "7.1.1" "NMF26X" "V8.2.17.0.NCACNEC"
