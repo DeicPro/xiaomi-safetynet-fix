@@ -5,6 +5,18 @@ Fix SafetyNet on Xiaomi devices with MIUI Developer/Beta ROM & Custom ROM like L
 
 **Changelog**
 
+v1.7
+
+-Added new supported devices: Mi 6
+
+-Added "ro.bootimage.build.fingerprint" prop
+
+-Removed reinitiate Magisk Hide
+
+-Added run Magisk Hide when boot & service steps are completed
+
+-Improved log code: waiting to SafetyNet test and Magisk Hide folder unmount, silence some shell output
+
 v1.6
 
 -Added new supported devices: Mi Pad, Mi Note, Mi 3/Mi 4, Mi 2/2S, Mi Pad 2, Mi Pad 3
