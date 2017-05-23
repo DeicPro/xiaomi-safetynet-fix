@@ -125,10 +125,10 @@ case $DEVICE in
 # Mi 6
     sagit) set_prop "7.1.1" "NMF26X" "V8.2.17.0.NCACNEC";;
 # Mi Note Pro
-    leo) "7.0" "NRD90M" "V8.2.3.0.NXHCNEC";;
+    leo) set_prop "7.0" "NRD90M" "V8.2.3.0.NXHCNEC";;
 # Redmi 1
-    HM2013023) "4.4.2" "HM2013023" "V7.3.1.0.KHBCNDD" "2013023";;
+    HM2013023) set_prop "4.4.2" "HM2013023" "V7.3.1.0.KHBCNDD" "2013023";;
 # Redmi 1S
-    armani) "4.4.4" "KTU84P" "V8.2.1.0.KHCMIDL";;
+    armani) set_prop "4.4.4" "KTU84P" "V8.2.1.0.KHCMIDL";;
     *) echo "$DEVICE is not supported too"
 esac

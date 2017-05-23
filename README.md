@@ -3,6 +3,8 @@
 Fix SafetyNet on Xiaomi devices with MIUI Developer/Beta ROM & Custom ROM like LOS, RR, etc.
 
 ## Changelog
+#### v1.8.1
+- Fixed forgotten set_prop function calls
 #### v1.8
 - Added new supported devices: Mi Note Pro, Redmi 1, Redmi 1S
 - Fixed Mi 5 prop
