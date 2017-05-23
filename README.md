@@ -5,6 +5,10 @@ Fix SafetyNet on Xiaomi devices with MIUI Developer/Beta ROM & Custom ROM like L
 
 **Changelog**
 
+v1.8
+
+-
+
 v1.7
 
 -Added new supported devices: Mi 6
