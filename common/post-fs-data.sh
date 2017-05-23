@@ -24,8 +24,8 @@ else exit 1; fi
 
 set_prop() {
     if [ "$4" ]; then MODEL="$4"; else MODEL="$DEVICE"; fi
-    $RESETPROP -v -n "ro.build.fingerprint" "Xiaomi/$MODEL/$DEVICE:$2/$3/$4:user/release-keys"
-    $RESETPROP -v -n "ro.bootimage.build.fingerprint" "Xiaomi/$MODEL/$DEVICE:$2/$3/$4:user/release-keys"
+    $RESETPROP -v -n "ro.build.fingerprint" "Xiaomi/$MODEL/$DEVICE:$1/$2/$3:user/release-keys"
+    $RESETPROP -v -n "ro.bootimage.build.fingerprint" "Xiaomi/$MODEL/$DEVICE:$1/$2/$3:user/release-keys"
     script_end &
     exit
 }
