@@ -3,6 +3,8 @@
 Fix SafetyNet on Xiaomi devices with MIUI Developer/Beta ROM & Custom ROM like LOS, RR, etc.
 
 ## Changelog
+#### v1.8.2
+- Fixed Redmi Note 3 MTK device name typo
 #### v1.8.1
 - Fixed forgotten set_prop function calls
 #### v1.8

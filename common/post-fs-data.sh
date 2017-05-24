@@ -67,7 +67,7 @@ case $DEVICE in
 # Redmi Note 2
     hermes) set_prop "5.0.2" "LRX22G" "V8.2.1.0.LHMCNDL";;
 # Redmi Note 3 MTK
-    hennesy) set_prop "5.0.2" "LRX22G" "V8.2.1.0.LHNCNDL";;
+    hennessy) set_prop "5.0.2" "LRX22G" "V8.2.1.0.LHNCNDL";;
 # Redmi Note 3 Qualcomm
     kenzo) set_prop "6.0.1" "MMB29M" "V8.2.1.0.MHOCNDL";;
 # Redmi Note 4 MTK
