@@ -46,11 +46,7 @@ script_end() {
     getprop
     sleep 1
     cat $LOGFILE
-    echo "Waiting for Magisk Manager SafetyNet check..."
-    grep_logcat "MANAGER: SN: Google API Connected"
-    grep_logcat "MANAGER: SN: Check with nonce"
-    grep_logcat "MANAGER: SN: Response"
-    grep_logcat "MANAGER: StatusFragment: SafetyNet UI refresh triggered"
+    check_safetynet &
     echo "Waiting for MagiskHide unmount..."
     while :; do grep "MagiskHide: Unmounted (/sbin)" "$LOGFILE" && \
     grep "MagiskHide: Unmounted (/magisk)" "$LOGFILE" && break; sleep 1; done
@@ -59,7 +55,17 @@ script_end() {
     /data/magisk/busybox tail +${MAGISKHIDE_LOG%%:*} "$LOGFILE"
 }
 
+check_safetynet() {
+    echo "Waiting for Magisk Manager SafetyNet check..."
+    grep_logcat "MANAGER: SN: Google API Connected"
+    grep_logcat "MANAGER: SN: Check with nonce"
+    grep_logcat "MANAGER: SN: Response"
+    #grep_logcat "MANAGER: StatusFragment: SafetyNet UI refresh triggered"
+}
+
 #logcat -b events -v raw -t 10
+#wget --post-data "api_option=paste&api_dev_key=2dc5d9876384c0232c6ce30ae0558479&api_paste_code=$(cat $log)&api_paste_name=$log" http://pastebin.com/api/api_post.php > /dev/null 2>&1
+
 
 DEVICE=$(cat /system/build.prop | sed -n "s/^ro.product.device=//p")
 
@@ -67,7 +73,7 @@ case $DEVICE in
 # Redmi Note 2
     hermes) set_prop "5.0.2" "LRX22G" "V8.2.1.0.LHMCNDL";;
 # Redmi Note 3 MTK
-    hennessy) set_prop "5.0.2" "LRX22G" "V8.2.1.0.LHNCNDL";;
+    hennessy) set_prop "5.0.2" "LRX22G" "V8.1.3.0.LHNCNDI";;
 # Redmi Note 3 Qualcomm
     kenzo) set_prop "6.0.1" "MMB29M" "V8.2.1.0.MHOCNDL";;
 # Redmi Note 4 MTK
@@ -130,5 +136,11 @@ case $DEVICE in
     HM2013023) set_prop "4.4.2" "HM2013023" "V7.3.1.0.KHBCNDD" "2013023";;
 # Redmi 1S
     armani) set_prop "4.4.4" "KTU84P" "V8.2.1.0.KHCMIDL";;
+# Redmi Pro
+    omega) set_prop "6.0" "MRA58K" "V8.1.2.0.MHQCNDI";;
+# Mi 4S
+    aqua) set_prop "5.1.1" "LMY47V" "V8.2.1.0.LAJCNDL";;
+# Redmi 4X
+    santoni) set_prop "6.0.1" "MMB29M" "V8.2.9.0.MAMMIEA";;
     *) echo "$DEVICE is not supported too"
 esac
