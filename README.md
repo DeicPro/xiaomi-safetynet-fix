@@ -3,6 +3,8 @@
 Fix SafetyNet on Xiaomi devices with MIUI Developer/Beta ROM & Custom ROM like LOS, RR, etc.
 
 ## Changelog
+#### v1.9.1
+- Fixed logging code: ignore output of wait for unmount loop
 #### v1.9
 - Added new supported devices: Redmi Pro, Mi 4S, Redmi 4X
 - Changed Redmi Note 3 MTK prop

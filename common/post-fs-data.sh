@@ -48,8 +48,10 @@ script_end() {
     cat $LOGFILE
     check_safetynet &
     echo "Waiting for MagiskHide unmount..."
+    set +x
     while :; do grep "MagiskHide: Unmounted (/sbin)" "$LOGFILE" && \
     grep "MagiskHide: Unmounted (/magisk)" "$LOGFILE" && break; sleep 1; done
+    set -x
     sleep 1
     MAGISKHIDE_LOG=$(grep -n -x "* Starting MagiskHide" "$LOGFILE")
     /data/magisk/busybox tail +${MAGISKHIDE_LOG%%:*} "$LOGFILE"
