@@ -1,8 +1,10 @@
-## Xiaomi SafetyNet Fix
+## Universal SafetyNet Fix
 [More details in support thread](https://forum.xda-developers.com/apps/magisk/xiaomi-safetynet-fix-t3600431)  
-Fix SafetyNet on Xiaomi devices with MIUI Developer/Beta ROM & Custom ROM like LOS, RR, etc.
+Fix SafetyNet on devices with MIUI Developer/Beta ROM, CyanogenMod, Lineage OS, Resurrection Remix, etc.
 
 ## Changelog
+#### v1.10
+- Module is now universal, not for Xiaomi devices only
 #### v1.9.1
 - Fixed logging code: ignore output of wait for unmount loop
 #### v1.9

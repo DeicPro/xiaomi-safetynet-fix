@@ -144,5 +144,5 @@ case $DEVICE in
     aqua) set_prop "5.1.1" "LMY47V" "V8.2.1.0.LAJCNDL";;
 # Redmi 4X
     santoni) set_prop "6.0.1" "MMB29M" "V8.2.9.0.MAMMIEA";;
-    *) echo "$DEVICE is not supported too"
+    *) echo "Using Mi 6 prop for $DEVICE..."; DEVICE=sagit; set_prop "7.1.1" "NMF26X" "V8.2.17.0.NCACNEC";;
 esac

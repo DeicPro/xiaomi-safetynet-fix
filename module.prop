@@ -1,7 +1,7 @@
 id=xiaomi-safetynet-fix
-name=Xiaomi SafetyNet Fix
-version=v1.9.1
-versionCode=13
+name=Universal SafetyNet Fix
+version=v1.10
+versionCode=14
 author=Deiki
-description=Fix SafetyNet on Xiaomi devices with MIUI Developer/Beta ROM & Custom ROM like LOS, RR, etc.
+description=Fix SafetyNet on devices with MIUI Developer/Beta ROM, CyanogenMod, Lineage OS, Resurrection Remix, etc.
 template=3
