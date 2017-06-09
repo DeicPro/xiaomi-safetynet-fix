@@ -12,14 +12,15 @@ set -x
 LOGFILE="/cache/magisk.log"
 
 log_print() {
-    echo "$1"
-    echo "$1" >> $LOGFILE
-    log -p i -t Magisk "$1"
+    echo "Universal SafetyNet Fix: $1"
+    echo "Universal SafetyNet Fix: $1" >> $LOGFILE
+    log -p i -t "Universal SafetyNet Fix" "$1"
 }
 
-if [ -f "/magisk/.core/bin/resetprop" ]; then RESETPROP="/magisk/.core/bin/resetprop"
+if [ -f "/sbin/magisk" ]; then RESETPROP="/sbin/magisk resetprop"
+elif [ -f "/data/magisk/magisk" ]; then RESETPROP="/data/magisk/magisk resetprop"
+elif [ -f "/magisk/.core/bin/resetprop" ]; then RESETPROP="/magisk/.core/bin/resetprop"
 elif [ -f "/data/magisk/resetprop" ]; then RESETPROP="/data/magisk/resetprop"
-elif [ -f "/sbin/resetprop" ]; then RESETPROP="/sbin/resetprop"
 else exit 1; fi
 
 set_prop() {
@@ -28,12 +29,6 @@ set_prop() {
     $RESETPROP -v -n "ro.bootimage.build.fingerprint" "Xiaomi/$MODEL/$DEVICE:$1/$2/$3:user/release-keys"
     script_end &
     exit
-}
-
-grep_logcat() {
-    set +x
-    while :; do logcat -d | grep "$1" && break; sleep 1; done
-    set -x
 }
 
 script_end() {
@@ -46,15 +41,14 @@ script_end() {
     getprop
     sleep 1
     cat $LOGFILE
-    check_safetynet &
-    echo "Waiting for MagiskHide unmount..."
+    #check_safetynet &
+    #check_unmount
+}
+
+grep_logcat() {
     set +x
-    while :; do grep "MagiskHide: Unmounted (/sbin)" "$LOGFILE" && \
-    grep "MagiskHide: Unmounted (/magisk)" "$LOGFILE" && break; sleep 1; done
+    while :; do logcat -b events -v raw -d | grep "$1" && break; sleep 1; done
     set -x
-    sleep 1
-    MAGISKHIDE_LOG=$(grep -n -x "* Starting MagiskHide" "$LOGFILE")
-    /data/magisk/busybox tail +${MAGISKHIDE_LOG%%:*} "$LOGFILE"
 }
 
 check_safetynet() {
@@ -65,9 +59,23 @@ check_safetynet() {
     #grep_logcat "MANAGER: StatusFragment: SafetyNet UI refresh triggered"
 }
 
+check_unmount() {
+    echo "Waiting for MagiskHide unmount..."
+    set +x
+    while :; do grep "MagiskHide: Unmounted (/sbin)" "$LOGFILE" && \
+    grep "MagiskHide: Unmounted (/magisk)" "$LOGFILE" && break; sleep 1; done
+    set -x
+    sleep 1
+    MAGISKHIDE_LOG=$(grep -n -x "* Starting MagiskHide" "$LOGFILE")
+    /data/magisk/busybox tail +${MAGISKHIDE_LOG%%:*} "$LOGFILE"
+}
+
 #logcat -b events -v raw -t 10
 #wget --post-data "api_option=paste&api_dev_key=2dc5d9876384c0232c6ce30ae0558479&api_paste_code=$(cat $log)&api_paste_name=$log" http://pastebin.com/api/api_post.php > /dev/null 2>&1
-
+#ro.build.selinux=0
+#ro.build.type=user
+#ro.build.tags=release-keys
+#selinux.reload_policy=1
 
 DEVICE=$(cat /system/build.prop | sed -n "s/^ro.product.device=//p")
 
