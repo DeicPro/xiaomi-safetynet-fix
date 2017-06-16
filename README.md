@@ -6,6 +6,7 @@ Fix SafetyNet on devices with MIUI Developer/Beta ROM, CyanogenMod, Lineage OS, 
 #### v1.10
 - Module is now universal, not for Xiaomi devices only
 - Module refactored
+- Magisk v13 beta support
 - Added some props
 - Added SafetyNet fix for Magisk v12
 - Check if Magisk Hide was properly started and try to fix
