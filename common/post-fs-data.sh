@@ -21,13 +21,24 @@ function background() {
         rm -f /dev/magisk_system/mirror/vendor
         ln -s /dev/magisk_system/mirror/system/vendor /dev/magisk_system/mirror/vendor
         while :; do
-            [ "$(grep 'Zygote.*ns=mnt:\[.*\]' '/cache/magisk.log')" ] && break || {
-                su -c /magisk/.core/magiskhide/disable; sleep 1
-                su -c /magisk/.core/magiskhide/enable; }
+            [ "$(grep 'Zygote.*ns=.*' '/cache/magisk.log')" ] && break || {
+                su -c exec /magisk/.core/magiskhide/disable; sleep 1
+                su -c exec /magisk/.core/magiskhide/enable; }
             sleep 3
         done; }
 
-    [ "$(magisk -v | grep '13.0(.*):MAGISK')" ] && {
+grep_logcat() {
+    set +x; while :; do logcat -b events -v raw -d | grep "$1" && { set -x; break; }; sleep 1; done
+}
+
+check_safetynet() {
+    echo "Waiting for Magisk Manager SafetyNet check..."
+    grep_logcat "MANAGER: SN: Google API Connected"
+    grep_logcat "MANAGER: SN: Check with nonce"
+    grep_logcat "MANAGER: SN: Response"
+}
+
+    [ "$(magisk -v | grep '13.0(.*):MAGISK' 2>/dev/null)" ] && {
         while :; do
             [ "$(grep 'proc_monitor:.*zygote.*ns=mnt:\[.*\]' '/cache/magisk.log')" ] && break || {
                 magiskhide --disable; sleep 1

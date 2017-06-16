@@ -3,6 +3,8 @@
 Fix SafetyNet on devices with MIUI Developer/Beta ROM, CyanogenMod, Lineage OS, Resurrection Remix, etc.
 
 ## Changelog
+#### v1.11
+- Fixed Magisk Hide detection for Magisk v12
 #### v1.10
 - Module is now universal, not for Xiaomi devices only
 - Module refactored
