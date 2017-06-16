@@ -5,6 +5,10 @@ Fix SafetyNet on devices with MIUI Developer/Beta ROM, CyanogenMod, Lineage OS, 
 ## Changelog
 #### v1.10
 - Module is now universal, not for Xiaomi devices only
+- Module refactored
+- Added some props
+- Added SafetyNet fix for Magisk v12
+- Check if Magisk Hide was properly started and try to fix
 #### v1.9.1
 - Fixed logging code: ignore output of wait for unmount loop
 #### v1.9
