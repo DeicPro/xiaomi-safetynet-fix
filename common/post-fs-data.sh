@@ -14,37 +14,32 @@ function background() {
         sleep 1
     done
 
-    sleep 5
+    get_pid() { "${BUSYBOX}"ps | grep -w "$1" | grep -v grep | "${BUSYBOX}"awk '{ print $1 }' | "${BUSYBOX}"head -n 1; }
 
-    [ "$(getprop magisk.version)" == "12.0" ] && {
-        mv /dev/magisk /dev/magisk_system
-        rm -f /dev/magisk_system/mirror/vendor
-        ln -s /dev/magisk_system/mirror/system/vendor /dev/magisk_system/mirror/vendor
-        while :; do
-            [ "$(grep 'Zygote.*ns=.*' '/cache/magisk.log')" ] && break || {
-                su -c exec /magisk/.core/magiskhide/disable; sleep 1
-                su -c exec /magisk/.core/magiskhide/enable; }
-            sleep 3
-        done; }
+    get_mnt() {
+        for GET_MNT in "$@"; do
+            "${BUSYBOX}"readlink /proc/"${GET_MNT}"/ns/mnt
+        done
+    }
 
-grep_logcat() {
-    set +x; while :; do logcat -b events -v raw -d | grep "$1" && { set -x; break; }; sleep 1; done
-}
-
-check_safetynet() {
-    echo "Waiting for Magisk Manager SafetyNet check..."
-    grep_logcat "MANAGER: SN: Google API Connected"
-    grep_logcat "MANAGER: SN: Check with nonce"
-    grep_logcat "MANAGER: SN: Response"
-}
-
-    [ "$(magisk -v | grep '13.0(.*):MAGISK' 2>/dev/null)" ] && {
-        while :; do
-            [ "$(grep 'proc_monitor:.*zygote.*ns=mnt:\[.*\]' '/cache/magisk.log')" ] && break || {
-                magiskhide --disable; sleep 1
-                magiskhide --enable; }
-            sleep 3
-        done; }
+    while :; do
+        [ "$(grep -i 'Zygote.*ns=' '/cache/magisk.log' | ${BUSYBOX}head -n 1)" ] && break
+        INIT_PID=$(get_pid "init")
+        ZYGOTE_PID=$(get_pid "zygote")
+        ZYGOTE64_PID=$(get_pid "zygote64")
+        [ "$(get_mnt $INIT_PID $ZYGOTE_PID $ZYGOTE64_PID)" ] && {
+            [ "$(getprop magisk.version)" == "12.0" ] && {
+                [ -d "/dev/magisk" ] && {
+                    mv /dev/magisk /dev/magisk_system
+                    rm -f /dev/magisk_system/mirror/vendor
+                    ln -s /dev/magisk_system/mirror/system/vendor /dev/magisk_system/mirror/vendor; }
+                su -c /magisk/.core/magiskhide/disable && sleep 2
+                su -c /magisk/.core/magiskhide/enable && sleep 2; }
+            [ "$(magisk -v | grep '13.0(.*):MAGISK' 2>/dev/null)" ] && {
+                magiskhide --disable && sleep 2
+                magiskhide --enable && sleep 2; }
+            [ "$MAGISKHIDE_RETRY" == "4" ] && break || MAGISKHIDE_RETRY=$(($MAGISKHIDE_RETRY+1)); }
+    done
 
     set +x
 
@@ -57,7 +52,7 @@ if [ -d "/data/data/com.topjohnwu.magisk/busybox" ]; then BUSYBOX="/data/data/co
 elif [ -f "/data/data/com.topjohnwu.magisk/busybox/busybox" ]; then BUSYBOX="/data/data/com.topjohnwu.magisk/busybox/busybox "
 elif [ -f "/data/app/com.topjohnwu.magisk-*/lib/*/libbusybox.so" ]; then BUSYBOX="/data/app/com.topjohnwu.magisk-*/lib/*/libbusybox.so "
 elif [ -d "/dev/busybox" ]; then BUSYBOX="/dev/busybox/"
-elif [ -f "/data/magisk/resetprop" ]; then BUSYBOX="/data/magisk/busybox "; fi
+elif [ -f "/data/magisk/busybox" ]; then BUSYBOX="/data/magisk/busybox "; fi
 
 RESETPROP="resetprop -v -n"
 
