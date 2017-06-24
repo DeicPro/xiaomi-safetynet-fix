@@ -50,7 +50,7 @@ LATESTARTSERVICE=false
 
 print_modname() {
   ui_print "*******************************"
-  ui_print "Universal SafetyNet Fix v2 Beta"
+  ui_print "Universal SafetyNet Fix v2 Beta 1"
   ui_print "*******************************"
 }
 
@@ -83,6 +83,10 @@ REPLACE="
 # NOTE: This part has to be adjusted to fit your own needs
 
 set_permissions() {
+    cp -af "${INSTALLER}"/common/"${ARCH}"/busybox "${MODPATH}"/busybox
+
+    cp -af "${INSTALLER}"/common/magiskhide "${MODPATH}"/magiskhide
+
   # Default permissions, don't remove them
   set_perm_recursive  $MODPATH  0  0  0755  0644
 

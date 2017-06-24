@@ -1,6 +1,6 @@
 # Declare files that will always have LF line endings on checkout.
 META-INF/** text eol=lf
-common/** text eol=lf
+#common/** text eol=lf
 module.prop text eol=lf
 changelog.txt text eol=lf
 

@@ -14,25 +14,21 @@ function background() {
         sleep 1
     done
 
-    get_pid() { "${BUSYBOX}"ps | grep -w "$1" | grep -v grep | "${BUSYBOX}"awk '{ print $1 }' | "${BUSYBOX}"head -n 1; }
+    get_pid() { ps | grep -w "$1" | grep -v grep | awk '{ print $1 }' | head -n 1; }
 
     get_mnt() {
         for GET_MNT in "$@"; do
-            "${BUSYBOX}"readlink /proc/"${GET_MNT}"/ns/mnt
+            readlink /proc/"${GET_MNT}"/ns/mnt
         done
     }
 
     while :; do
-        [ "$(grep -i 'Zygote.*ns=' '/cache/magisk.log' | ${BUSYBOX}head -n 1)" ] && break
+        [ "$(grep -i 'Zygote.*ns=' '/cache/magisk.log' | head -n 1)" ] && break
         INIT_PID=$(get_pid "init")
         ZYGOTE_PID=$(get_pid "zygote")
         ZYGOTE64_PID=$(get_pid "zygote64")
         [ "$(get_mnt $INIT_PID $ZYGOTE_PID $ZYGOTE64_PID)" ] && {
             [ "$(getprop magisk.version)" == "12.0" ] && {
-                [ -d "/dev/magisk" ] && {
-                    mv /dev/magisk /dev/magisk_system
-                    rm -f /dev/magisk_system/mirror/vendor
-                    ln -s /dev/magisk_system/mirror/system/vendor /dev/magisk_system/mirror/vendor; }
                 su -c /magisk/.core/magiskhide/disable && sleep 2
                 su -c /magisk/.core/magiskhide/enable && sleep 2; }
             [ "$(magisk -v | grep '13.0(.*):MAGISK' 2>/dev/null)" ] && {
@@ -46,13 +42,26 @@ function background() {
     echo "*** Universal SafetyNet Fix > END"
 
     cat "${MODDIR}"/post-fs-data.log >> /cache/magisk.log
+
+    echo "*** Universal SafetyNet Fix > Running system mirror & dummy hide"
+
+    [ "$(getprop magisk.version)" == "12.0" ] && {
+        logcat -c && logcat -b events -v raw -s am_proc_start | while read LOG_PROC; do
+            [ "$(echo $LOG_PROC | grep com.google.android.gms.unstable | head -n 1)" ] && SAFETYNET_PID=$(echo $LOG_PROC | grep com.google.android.gms.unstable | head -n 1 | awk '{ print substr($0,4) }' | sed 's/,.*//')
+            [ "$SAFETYNET_PID" ] && {
+                nsenter --target=$SAFETYNET_PID --mount=/proc/${SAFETYNET_PID}/ns/mnt -- /system/bin/sh -c 'for MOUNTPOINT in "/dev/magisk/mirror/system" "/dev/magisk/dummy/system/xbin" "/dev/magisk/dummy/system/*/*"; do /data/magisk/busybox umount -l $MOUNTPOINT; done'
+                unset SAFETYNET_PID; logcat -c; }
+        done; }
 }
 
-if [ -d "/data/data/com.topjohnwu.magisk/busybox" ]; then BUSYBOX="/data/data/com.topjohnwu.magisk/busybox/"
-elif [ -f "/data/data/com.topjohnwu.magisk/busybox/busybox" ]; then BUSYBOX="/data/data/com.topjohnwu.magisk/busybox/busybox "
-elif [ -f "/data/app/com.topjohnwu.magisk-*/lib/*/libbusybox.so" ]; then BUSYBOX="/data/app/com.topjohnwu.magisk-*/lib/*/libbusybox.so "
-elif [ -d "/dev/busybox" ]; then BUSYBOX="/dev/busybox/"
-elif [ -f "/data/magisk/busybox" ]; then BUSYBOX="/data/magisk/busybox "; fi
+cp -af "${MODDIR}"/busybox /data/magisk/busybox
+
+[ -d "/magisk/.core/magiskhide" ] && {
+    cp -af "${MODDIR}"/magiskhide /magisk/.core/magiskhide; }
+
+for APPLET in "ps" "awk" "head" "readlink" "sed" "nsenter"; do
+    alias "$APPLET"="/data/magisk/busybox $APPLET"
+done
 
 RESETPROP="resetprop -v -n"
 
