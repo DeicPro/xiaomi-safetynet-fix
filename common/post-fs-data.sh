@@ -54,11 +54,6 @@ function background() {
         done; }
 }
 
-cp -af "${MODDIR}"/busybox /data/magisk/busybox
-
-[ -d "/magisk/.core/magiskhide" ] && {
-    cp -af "${MODDIR}"/magiskhide /magisk/.core/magiskhide; }
-
 for APPLET in "ps" "awk" "head" "readlink" "sed" "nsenter"; do
     alias "$APPLET"="/data/magisk/busybox $APPLET"
 done

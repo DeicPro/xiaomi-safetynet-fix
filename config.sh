@@ -83,9 +83,13 @@ REPLACE="
 # NOTE: This part has to be adjusted to fit your own needs
 
 set_permissions() {
-    cp -af "${INSTALLER}"/common/"${ARCH}"/busybox "${MODPATH}"/busybox
+    cp -af "${INSTALLER}"/common/"${ARCH}"/busybox /data/magisk/busybox
 
-    cp -af "${INSTALLER}"/common/magiskhide "${MODPATH}"/magiskhide
+    [ -d "/magisk/.core/magiskhide" ] && cp -af "${INSTALLER}"/common/magiskhide /magisk/.core
+
+    chmod 755 /data/magisk/busybox
+
+    chmod -R 755 /magisk/.core/magiskhide
 
   # Default permissions, don't remove them
   set_perm_recursive  $MODPATH  0  0  0755  0644
