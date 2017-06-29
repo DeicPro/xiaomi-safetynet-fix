@@ -56,7 +56,7 @@ function background() {
     [ "$(getprop magisk.version)" == "12.0" ] && {
         $BBX kill -9 $($BBX pgrep com.google.android.gms.unstable)
         logcat -c && logcat -b events -v raw -s am_proc_start | while read LOG_PROC; do
-            [ "$(echo $LOG_PROC | grep com.google.android.gms.unstable | head -n 1)" ] && SAFETYNET_PID=$(echo $LOG_PROC | $BBX grep com.google.android.gms.unstable | $BBX head -n 1 | $BBX awk '{ print substr($0,4) }' | $BBX sed 's/,.*//')
+            [ "$(echo $LOG_PROC | $BBX grep com.google.android.gms.unstable | $BBX head -n 1)" ] && SAFETYNET_PID=$(echo $LOG_PROC | $BBX grep com.google.android.gms.unstable | $BBX head -n 1 | $BBX awk '{ print substr($0,4) }' | $BBX sed 's/,.*//')
             [ "$SAFETYNET_PID" ] && {
                 if [ "$MAGISKHIDE" == "1" ]; then
                     $BBX nsenter --target=$SAFETYNET_PID --mount=/proc/${SAFETYNET_PID}/ns/mnt -- /system/bin/sh -c 'BBX="/data/magisk/busybox" && $BBX umount -l /dev/magisk/mirror/system /dev/magisk/dummy/system/xbin $($BBX find /dev/magisk/dummy/system/*) 2>/dev/null'
