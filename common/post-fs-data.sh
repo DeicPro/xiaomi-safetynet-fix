@@ -9,21 +9,28 @@ set -x
 
 function background() {
     set +x; while :; do
+        [ "$(getprop persist.magisk.hide)" == "1" ] && {
+            set -x; break; } || {
+            setprop "persist.magisk.hide" "1"; sleep 1; }
+    done
+
+    set +x; while :; do
         [ "$(getprop sys.boot_completed)" == "1" ] && [ "$(getprop init.svc.magisk_service)" == "stopped" ] && {
             set -x; break; }
         sleep 1
     done
 
-    get_pid() { ps | grep -w "$1" | grep -v grep | awk '{ print $1 }' | head -n 1; }
+    get_pid() { $BBX ps | $BBX grep -w "$1" | $BBX grep -v grep | $BBX awk '{ print $1 }' | $BBX head -n 1; }
 
     get_mnt() {
         for GET_MNT in "$@"; do
-            readlink /proc/"${GET_MNT}"/ns/mnt
+            $BBX readlink /proc/"${GET_MNT}"/ns/mnt
         done
     }
 
     while :; do
-        [ "$(grep -i 'Zygote.*ns=' '/cache/magisk.log' | head -n 1)" ] && break
+        [ "$($BBX grep -i 'Zygote.*ns=' '/cache/magisk.log' | $BBX head -n 1)" ] && {
+            MAGISKHIDE="1"; break; }
         INIT_PID=$(get_pid "init")
         ZYGOTE_PID=$(get_pid "zygote")
         ZYGOTE64_PID=$(get_pid "zygote64")
@@ -39,24 +46,28 @@ function background() {
 
     set +x
 
-    echo "*** Universal SafetyNet Fix > END"
+    echo "*** Universal SafetyNet Fix > END
+*** Universal SafetyNet Fix > Running Magisk Hide (SafetyNet only)"
 
     cat "${MODDIR}"/post-fs-data.log >> /cache/magisk.log
 
-    echo "*** Universal SafetyNet Fix > Running system mirror & dummy hide"
+    set -x
 
     [ "$(getprop magisk.version)" == "12.0" ] && {
+        $BBX kill -9 $($BBX pgrep com.google.android.gms.unstable)
         logcat -c && logcat -b events -v raw -s am_proc_start | while read LOG_PROC; do
-            [ "$(echo $LOG_PROC | grep com.google.android.gms.unstable | head -n 1)" ] && SAFETYNET_PID=$(echo $LOG_PROC | grep com.google.android.gms.unstable | head -n 1 | awk '{ print substr($0,4) }' | sed 's/,.*//')
+            [ "$(echo $LOG_PROC | grep com.google.android.gms.unstable | head -n 1)" ] && SAFETYNET_PID=$(echo $LOG_PROC | $BBX grep com.google.android.gms.unstable | $BBX head -n 1 | $BBX awk '{ print substr($0,4) }' | $BBX sed 's/,.*//')
             [ "$SAFETYNET_PID" ] && {
-                nsenter --target=$SAFETYNET_PID --mount=/proc/${SAFETYNET_PID}/ns/mnt -- /system/bin/sh -c 'for MOUNTPOINT in "/dev/magisk/mirror/system" "/dev/magisk/dummy/system/xbin" "/dev/magisk/dummy/system/*/*"; do /data/magisk/busybox umount -l $MOUNTPOINT; done'
+                if [ "$MAGISKHIDE" == "1" ]; then
+                    $BBX nsenter --target=$SAFETYNET_PID --mount=/proc/${SAFETYNET_PID}/ns/mnt -- /system/bin/sh -c 'BBX="/data/magisk/busybox" && $BBX umount -l /dev/magisk/mirror/system /dev/magisk/dummy/system/xbin $($BBX find /dev/magisk/dummy/system/*) 2>/dev/null'
+                else
+                    $BBX nsenter --target=$SAFETYNET_PID --mount=/proc/${SAFETYNET_PID}/ns/mnt -- /system/bin/sh -c 'BBX="/data/magisk/busybox" && MNT_DUMMY=$(cd /dev/magisk/mnt/dummy && $BBX find system/*) && MNT_MIRROR=$(cd /dev/magisk/mnt/mirror && $BBX find system/*) && MNT_SYSTEM=$(cd /dev/magisk/mnt && $BBX find system/*) && DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system) && $BBX umount -l $MNT_DUMMY $MNT_MIRROR $MNT_SYSTEM $DUMMY_SYSTEM /dev/magisk/mirror/system /dev/block/loop* /sbin 2>/dev/null'
+                fi
                 unset SAFETYNET_PID; logcat -c; }
         done; }
 }
 
-for APPLET in "ps" "awk" "head" "readlink" "sed" "nsenter"; do
-    alias "$APPLET"="/data/magisk/busybox $APPLET"
-done
+BBX="/data/magisk/busybox"
 
 RESETPROP="resetprop -v -n"
 
@@ -71,7 +82,6 @@ $RESETPROP "ro.build.type" "user"
 $RESETPROP "ro.build.tags" "release-keys"
 $RESETPROP "ro.build.selinux" "0"
 $RESETPROP "selinux.reload_policy" "1"
-$RESETPROP "persist.magisk.hide" "1"
 
 background &
 
