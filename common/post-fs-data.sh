@@ -35,9 +35,6 @@ function background() {
         ZYGOTE_PID=$(get_pid "zygote")
         ZYGOTE64_PID=$(get_pid "zygote64")
         [ "$(get_mnt $INIT_PID $ZYGOTE_PID $ZYGOTE64_PID)" ] && {
-            [ "$(getprop magisk.version)" == "12.0" ] && {
-                su -c /magisk/.core/magiskhide/disable && sleep 2
-                su -c /magisk/.core/magiskhide/enable && sleep 2; }
             [ "$(magisk -v | grep '13.0(.*):MAGISK' 2>/dev/null)" ] && {
                 magiskhide --disable && sleep 2
                 magiskhide --enable && sleep 2; }
@@ -56,14 +53,16 @@ function background() {
     [ "$(getprop magisk.version)" == "12.0" ] && {
         $BBX kill -9 $($BBX pgrep com.google.android.gms.unstable)
         logcat -c && logcat -b events -v raw -s am_proc_start | while read LOG_PROC; do
-            [ "$(echo $LOG_PROC | $BBX grep com.google.android.gms.unstable | $BBX head -n 1)" ] && SAFETYNET_PID=$(echo $LOG_PROC | $BBX grep com.google.android.gms.unstable | $BBX head -n 1 | $BBX awk '{ print substr($0,4) }' | $BBX sed 's/,.*//')
-            [ "$SAFETYNET_PID" ] && {
+            for HIDELIST in $(cat /magisk/.core/magiskhide/hidelist); do
+                [ "$(echo $LOG_PROC | $BBX grep $HIDELIST | $BBX head -n 1)" ] && APP_PID=$(echo $LOG_PROC | $BBX grep $HIDELIST | $BBX head -n 1 | $BBX awk '{ print substr($0,4) }' | $BBX sed 's/,.*//')
+            done
+            [ "$APP_PID" ] && {
                 if [ "$MAGISKHIDE" == "1" ]; then
-                    $BBX nsenter --target=$SAFETYNET_PID --mount=/proc/${SAFETYNET_PID}/ns/mnt -- /system/bin/sh -c 'BBX="/data/magisk/busybox" && $BBX umount -l /dev/magisk/mirror/system /dev/magisk/dummy/system/xbin $($BBX find /dev/magisk/dummy/system/*) 2>/dev/null'
+                    $BBX nsenter --target=$APP_PID --mount=/proc/${APP_PID}/ns/mnt -- /system/bin/sh -c 'BBX="/data/magisk/busybox" && $BBX umount -l /dev/magisk/mirror/system /dev/magisk/dummy/system/xbin $($BBX find /dev/magisk/dummy/system/*) 2>/dev/null'
                 else
-                    $BBX nsenter --target=$SAFETYNET_PID --mount=/proc/${SAFETYNET_PID}/ns/mnt -- /system/bin/sh -c 'BBX="/data/magisk/busybox" && MNT_DUMMY=$(cd /dev/magisk/mnt/dummy && $BBX find system/*) && MNT_MIRROR=$(cd /dev/magisk/mnt/mirror && $BBX find system/*) && MNT_SYSTEM=$(cd /dev/magisk/mnt && $BBX find system/*) && DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system) && $BBX umount -l $MNT_DUMMY $MNT_MIRROR $MNT_SYSTEM $DUMMY_SYSTEM /dev/magisk/mirror/system /dev/block/loop* /sbin 2>/dev/null'
+                    $BBX nsenter --target=$APP_PID --mount=/proc/${APP_PID}/ns/mnt -- /system/bin/sh -c 'BBX="/data/magisk/busybox" && MNT_DUMMY=$(cd /dev/magisk/mnt/dummy && $BBX find system/*) && MNT_MIRROR=$(cd /dev/magisk/mnt/mirror && $BBX find system/*) && MNT_SYSTEM=$(cd /dev/magisk/mnt && $BBX find system/*) && DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system) && $BBX umount -l $MNT_DUMMY $MNT_MIRROR $MNT_SYSTEM $DUMMY_SYSTEM /dev/magisk/mirror/system /dev/block/loop* /sbin 2>/dev/null'
                 fi
-                unset SAFETYNET_PID; logcat -c; }
+                unset APP_PID; logcat -c; }
         done; }
 }
 

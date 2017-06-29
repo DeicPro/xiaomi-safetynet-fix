@@ -1,6 +1,6 @@
 id=xiaomi-safetynet-fix
 name=Universal SafetyNet Fix
-version=v2 Beta 2
+version=v2 Beta 3
 versionCode=15
 author=Deiki
 description=Try to fix SafetyNet on devices with MIUI Developer/Beta ROM, CyanogenMod, Lineage OS, Resurrection Remix, etc.
