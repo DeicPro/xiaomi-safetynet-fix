@@ -1,9 +1,9 @@
 #!/system/bin/sh
 MODDIR=${0%/*}
 
-exec &> "${MODDIR}"/post-fs-data.log
+exec &> /cache/universal-safetynet-fix.log
 
-echo "*** Universal SafetyNet Fix > START"
+echo "*** Universal SafetyNet Fix > Running module" >> /cache/magisk.log
 
 set -x
 
@@ -41,14 +41,7 @@ function background() {
             [ "$MAGISKHIDE_RETRY" == "4" ] && break || MAGISKHIDE_RETRY=$(($MAGISKHIDE_RETRY+1)); }
     done
 
-    set +x
-
-    echo "*** Universal SafetyNet Fix > END
-*** Universal SafetyNet Fix > Running Magisk Hide (SafetyNet only)"
-
-    cat "${MODDIR}"/post-fs-data.log >> /cache/magisk.log
-
-    set -x
+    echo "*** Universal SafetyNet Fix > Running Universal Hide" >> /cache/magisk.log
 
     [ "$(getprop magisk.version)" == "12.0" ] && {
         $BBX kill -9 $($BBX pgrep com.google.android.gms.unstable)
@@ -58,9 +51,9 @@ function background() {
             done
             [ "$APP_PID" ] && {
                 if [ "$MAGISKHIDE" == "1" ]; then
-                    $BBX nsenter --target=$APP_PID --mount=/proc/${APP_PID}/ns/mnt -- /system/bin/sh -c 'BBX="/data/magisk/busybox" && $BBX umount -l /dev/magisk/mirror/system /dev/magisk/dummy/system/xbin $($BBX find /dev/magisk/dummy/system/*) 2>/dev/null'
+                    $BBX nsenter --target=$APP_PID --mount=/proc/${APP_PID}/ns/mnt -- /system/bin/sh -c 'BBX="/data/magisk/busybox"; DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system 2>/dev/null); $BBX umount -l /dev/magisk/mirror/system $DUMMY_SYSTEM 2>/dev/null'
                 else
-                    $BBX nsenter --target=$APP_PID --mount=/proc/${APP_PID}/ns/mnt -- /system/bin/sh -c 'BBX="/data/magisk/busybox" && MNT_DUMMY=$(cd /dev/magisk/mnt/dummy && $BBX find system/*) && MNT_MIRROR=$(cd /dev/magisk/mnt/mirror && $BBX find system/*) && MNT_SYSTEM=$(cd /dev/magisk/mnt && $BBX find system/*) && DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system) && $BBX umount -l $MNT_DUMMY $MNT_MIRROR $MNT_SYSTEM $DUMMY_SYSTEM /dev/magisk/mirror/system /dev/block/loop* /sbin 2>/dev/null'
+                    $BBX nsenter --target=$APP_PID --mount=/proc/${APP_PID}/ns/mnt -- /system/bin/sh -c 'BBX="/data/magisk/busybox"; MNT_DUMMY=$(cd /dev/magisk/mnt/dummy 2>/dev/null && $BBX find system/*); MNT_MIRROR=$(cd /dev/magisk/mnt/mirror 2>/dev/null && $BBX find system/*); MNT_SYSTEM=$(cd /dev/magisk/mnt 2>/dev/null && $BBX find system/*); DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system 2>/dev/null); $BBX umount -l $MNT_DUMMY $MNT_MIRROR $MNT_SYSTEM $DUMMY_SYSTEM /dev/magisk/mirror/system /dev/block/loop* /sbin /system/xbin 2>/dev/null'
                 fi
                 unset APP_PID; logcat -c; }
         done; }
