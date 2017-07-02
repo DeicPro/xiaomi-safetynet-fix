@@ -20,30 +20,33 @@ function background() {
         sleep 1
     done
 
-    get_pid() { $BBX ps | $BBX grep -w "$1" | $BBX grep -v grep | $BBX awk '{ print $1 }' | $BBX head -n 1; }
+    get_pid() { $BBX pgrep $1 | $BBX head -n 1; }
 
-    get_mnt() {
-        for GET_MNT in "$@"; do
-            $BBX readlink /proc/"${GET_MNT}"/ns/mnt
-        done
-    }
+    INIT_PID=$(get_pid "init")
+    ZYGOTE_PID=$(get_pid "-x zygote")
+    ZYGOTE64_PID=$(get_pid "-x zygote64")
+
+    for GET_MNT in "$INIT_PID" "$ZYGOTE_PID" "$ZYGOTE64_PID"; do
+        $BBX readlink /proc/"${GET_MNT}"/ns/mnt || {
+            echo "*** Universal SafetyNet Fix > Fail: mount namespaces are not supported in your kernel" >> /cache/magisk.log
+            exit; }
+    done
+
+    ZYGOTE_MNT=$($BBX readlink /proc/"$ZYGOTE_PID"/ns/mnt | $BBX sed 's/.*\[/\Zygote.*/' | $BBX sed 's/\]//')
 
     while :; do
-        [ "$($BBX grep -i 'Zygote.*ns=' '/cache/magisk.log' | $BBX head -n 1)" ] && {
+        [ "$($BBX grep -i ${ZYGOTE_MNT} '/cache/magisk.log' | $BBX head -n 1)" ] && {
             MAGISKHIDE="1"; break; }
-        INIT_PID=$(get_pid "init")
-        ZYGOTE_PID=$(get_pid "zygote")
-        ZYGOTE64_PID=$(get_pid "zygote64")
-        [ "$(get_mnt $INIT_PID $ZYGOTE_PID $ZYGOTE64_PID)" ] && {
-            [ "$(magisk -v | grep '13.0(.*):MAGISK' 2>/dev/null)" ] && {
+            [ "$(magisk -v 2>/dev/null | grep '13.0(.*):MAGISK')" ] && {
                 magiskhide --disable && sleep 2
                 magiskhide --enable && sleep 2; }
-            [ "$MAGISKHIDE_RETRY" == "4" ] && break || MAGISKHIDE_RETRY=$(($MAGISKHIDE_RETRY+1)); }
+            [ "$MAGISKHIDE_RETRY" == "4" ] && break || MAGISKHIDE_RETRY=$((${MAGISKHIDE_RETRY}+1))
     done
 
     echo "*** Universal SafetyNet Fix > Running Universal Hide" >> /cache/magisk.log
 
     [ "$(getprop magisk.version)" == "12.0" ] && {
+        $BBX nsenter --target="$INIT_PID" --mount=/proc/"${INIT_PID}"/ns/mnt -- /system/bin/sh -c 'echo' && NSENTER_SH="/system/bin/sh" || NSENTER_SH="$BBX sh"
         $BBX kill -9 $($BBX pgrep com.google.android.gms.unstable)
         logcat -c && logcat -b events -v raw -s am_proc_start | while read LOG_PROC; do
             for HIDELIST in $(cat /magisk/.core/magiskhide/hidelist); do
@@ -51,9 +54,9 @@ function background() {
             done
             [ "$APP_PID" ] && {
                 if [ "$MAGISKHIDE" == "1" ]; then
-                    $BBX nsenter --target=$APP_PID --mount=/proc/${APP_PID}/ns/mnt -- /system/bin/sh -c 'BBX="/data/magisk/busybox"; DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system 2>/dev/null); $BBX umount -l /dev/magisk/mirror/system $DUMMY_SYSTEM 2>/dev/null'
+                    $BBX nsenter --target="$APP_PID" --mount=/proc/"${APP_PID}"/ns/mnt -- $NSENTER_SH -c 'BBX="/data/magisk/busybox"; DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system 2>/dev/null); $BBX umount -l /dev/magisk/mirror/system $DUMMY_SYSTEM 2>/dev/null'
                 else
-                    $BBX nsenter --target=$APP_PID --mount=/proc/${APP_PID}/ns/mnt -- /system/bin/sh -c 'BBX="/data/magisk/busybox"; MNT_DUMMY=$(cd /dev/magisk/mnt/dummy 2>/dev/null && $BBX find system/*); MNT_MIRROR=$(cd /dev/magisk/mnt/mirror 2>/dev/null && $BBX find system/*); MNT_SYSTEM=$(cd /dev/magisk/mnt 2>/dev/null && $BBX find system/*); DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system 2>/dev/null); $BBX umount -l $MNT_DUMMY $MNT_MIRROR $MNT_SYSTEM $DUMMY_SYSTEM /dev/magisk/mirror/system /dev/block/loop* /sbin /system/xbin 2>/dev/null'
+                    $BBX nsenter --target="$APP_PID" --mount=/proc/"${APP_PID}"/ns/mnt -- $NSENTER_SH -c 'BBX="/data/magisk/busybox"; MNT_DUMMY=$(cd /dev/magisk/mnt/dummy 2>/dev/null && $BBX find system/*); MNT_MIRROR=$(cd /dev/magisk/mnt/mirror 2>/dev/null && $BBX find system/*); MNT_SYSTEM=$(cd /dev/magisk/mnt 2>/dev/null && $BBX find system/*); DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system 2>/dev/null); $BBX umount -l $MNT_DUMMY $MNT_MIRROR $MNT_SYSTEM $DUMMY_SYSTEM /dev/magisk/mirror/system /dev/block/loop* /sbin /system/xbin 2>/dev/null'
                 fi
                 unset APP_PID; logcat -c; }
         done; }

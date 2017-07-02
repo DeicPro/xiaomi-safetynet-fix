@@ -50,7 +50,7 @@ LATESTARTSERVICE=false
 
 print_modname() {
   ui_print "*******************************"
-  ui_print "Universal SafetyNet Fix v2 Beta 3"
+  ui_print "Universal SafetyNet Fix v2 Beta 4"
   ui_print "*******************************"
 }
 
