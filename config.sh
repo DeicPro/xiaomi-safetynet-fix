@@ -31,7 +31,7 @@ MODID=xiaomi-safetynet-fix
 
 # Set to true if you need to enable Magic Mount
 # Most mods would like it to be enabled
-AUTOMOUNT=false
+AUTOMOUNT=true
 
 # Set to true if you need to load system.prop
 PROPFILE=false
@@ -50,7 +50,7 @@ LATESTARTSERVICE=false
 
 print_modname() {
   ui_print "*******************************"
-  ui_print "Universal SafetyNet Fix v2 Beta 4"
+  ui_print "Universal SafetyNet Fix v2 Beta 5"
   ui_print "*******************************"
 }
 

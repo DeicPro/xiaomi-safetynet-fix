@@ -1,0 +1,22 @@
+#!/system/bin/sh
+
+function usage() {
+    echo "Universal SafetyNet Fix $(getprop persist.usnf.version) settings
+
+    fingerprint <value>
+        Set your own fingerprint value, or:
+            0 = use system default
+            1 = use module default.
+        Current: $(getprop persist.usnf.fingerprint)
+
+    universalhide <value>
+        Force full Universal Hide:
+            1 = forced.
+        Current: $(getprop persist.usnf.universalhide)"
+}
+
+case "$1" in
+    fingerprint) setprop "persist.usnf.fingerprint" "$2";;
+    universalhide) setprop "persist.usnf.universalhide" "$2";;
+    *) usage;;
+esac

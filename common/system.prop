@@ -1,0 +1,4 @@
+ro.build.type=user
+ro.build.tags=release-keys
+ro.build.selinux=0
+selinux.reload_policy=1
