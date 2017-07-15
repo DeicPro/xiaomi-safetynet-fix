@@ -83,14 +83,6 @@ REPLACE="
 # NOTE: This part has to be adjusted to fit your own needs
 
 set_permissions() {
-    cp -af "${INSTALLER}"/common/"${ARCH}"/busybox /data/magisk/busybox
-
-    [ -d "/magisk/.core/magiskhide" ] && cp -af "${INSTALLER}"/common/magiskhide /magisk/.core
-
-    chmod 755 /data/magisk/busybox
-
-    chmod -R 755 /magisk/.core/magiskhide
-
   # Default permissions, don't remove them
   set_perm_recursive  $MODPATH  0  0  0755  0644
 
@@ -106,4 +98,14 @@ set_permissions() {
   # set_perm  $MODPATH/system/bin/app_process32   0       2000    0755         u:object_r:zygote_exec:s0
   # set_perm  $MODPATH/system/bin/dex2oat         0       2000    0755         u:object_r:dex2oat_exec:s0
   # set_perm  $MODPATH/system/lib/libart.so       0       0       0644
+
+    cp -af "${INSTALLER}"/common/"${ARCH}"/busybox /data/magisk/busybox
+
+    [ -d "/magisk/.core/magiskhide" ] && cp -af "${INSTALLER}"/common/magiskhide /magisk/.core
+
+    chmod 755 /data/magisk/busybox
+
+    chmod -R 755 /magisk/.core/magiskhide
+
+    chmod 755 "${MODPATH}"/system/xbin/usnf
 }
