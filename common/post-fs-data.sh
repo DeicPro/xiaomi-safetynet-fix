@@ -155,7 +155,13 @@ BBX="/data/magisk/busybox"
     elif [ -f "/magisk/.core/bin/resetprop" ]; then RESETPROP="/magisk/.core/bin/$RESETPROP"
     elif [ -f "/data/magisk/resetprop" ]; then RESETPROP="/data/magisk/$RESETPROP"; fi
     $RESETPROP "ro.build.fingerprint" "$FINGERPRINT"
-    $RESETPROP "ro.bootimage.build.fingerprint" "$FINGERPRINT"; }
+    $RESETPROP "ro.bootimage.build.fingerprint" "$FINGERPRINT"
+    [ "$MAGISK_VERSION" == "13" ] && {
+        $RESETPROP --delete "init.svc.magisk_pfs"
+        $RESETPROP --delete "init.svc.magisk_pfsd"
+        $RESETPROP --delete "init.svc.magisk_service"
+        $RESETPROP --delete "persist.magisk.hide"
+    }; }
 
 background &
 
