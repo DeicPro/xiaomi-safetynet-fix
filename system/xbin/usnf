@@ -1,22 +1,35 @@
 #!/system/bin/sh
 
 function usage() {
+    [ "$(getprop persist.usnf.fingerprint)" ] && FINGERPRINT=$(getprop persist.usnf.fingerprint) || FINGERPRINT="nothing"
+
+    [ "$(getprop persist.usnf.universalhide)" ] && UNIVERSALHIDE=$(getprop persist.usnf.universalhide) || UNIVERSALHIDE="nothing"
+
     echo "Universal SafetyNet Fix $(getprop persist.usnf.version) settings
 
+Usage: usnf <option> <value>
+
+Options:
     fingerprint <value>
         Set your own fingerprint value, or:
             0 = use system default
-            1 = use module default.
-        Current: $(getprop persist.usnf.fingerprint)
+            1 = use module default
+        Current: $FINGERPRINT
 
     universalhide <value>
         Force full Universal Hide:
-            1 = forced.
-        Current: $(getprop persist.usnf.universalhide)"
+            1 = forced
+        Current: $UNIVERSALHIDE"
+}
+
+function ask_reboot() {
+    echo "You need reboot to apply changes, reboot now? y/n"
+    read reboot_opt
+    [ "$reboot_opt" == "y" ] || [ "$reboot_opt" == "Y" ] && reboot
 }
 
 case "$1" in
-    fingerprint) setprop "persist.usnf.fingerprint" "$2";;
-    universalhide) setprop "persist.usnf.universalhide" "$2";;
+    fingerprint) setprop "persist.usnf.fingerprint" "$2" && ask_reboot;;
+    universalhide) setprop "persist.usnf.universalhide" "$2" && ask_reboot;;
     *) usage;;
 esac

@@ -59,21 +59,22 @@ function background() {
     [ "$MAGISK_VERSION" == "12" ] || [ "$MAGISKHIDE" == "0" ] && {
         echo "*** Universal SafetyNet Fix > Running Universal Hide" >> /cache/magisk.log
 
-        #[ "$MAGISKHIDE" == "0" ] && {
-            #[ "$MAGISK_VERSION" == "12" ] && sh /magisk/.core/magiskhide/disable
-            #[ "$MAGISK_VERSION" == "13" ] && /sbin/magisk magiskhide --disable; }
+        [ "$MAGISKHIDE" == "0" ] && {
+            [ "$MAGISK_VERSION" == "12" ] && sh /magisk/.core/magiskhide/disable
+            [ "$MAGISK_VERSION" == "13" ] && /sbin/magisk magiskhide --disable
+            setprop "persist.magisk.hide" "1"; }
 
-    [ -d /sbin_orig ] || {
-        echo "*** Universal SafetyNet Fix > Universal Hide: moving and re-linking /sbin binaries" >> /cache/magisk.log
-        mount -o rw,remount rootfs /
-        mv -f /sbin /sbin_orig
-        mkdir /sbin
-        mount -o ro,remount rootfs /
-        mkdir -p /dev/sbin_bind
-        chmod 755 /dev/sbin_bind
-        ln -s /sbin_orig/* /dev/sbin_bind
-        $BBX chcon -h u:object_r:system_file:s0 /dev/sbin_bind /dev/sbin_bind/*
-        mount -o bind /dev/sbin_bind /sbin; }
+        [ -d /sbin_orig ] || {
+            echo "*** Universal SafetyNet Fix > Universal Hide: moving and re-linking /sbin binaries" >> /cache/magisk.log
+            mount -o rw,remount rootfs /
+            mv -f /sbin /sbin_orig
+            mkdir /sbin
+            mount -o ro,remount rootfs /
+            mkdir -p /dev/sbin_bind
+            chmod 755 /dev/sbin_bind
+            ln -s /sbin_orig/* /dev/sbin_bind
+            $BBX chcon -h u:object_r:system_file:s0 /dev/sbin_bind /dev/sbin_bind/*
+            mount -o bind /dev/sbin_bind /sbin; }
 
         $BBX nsenter --target="$INIT_PID" --mount=/proc/"${INIT_PID}"/ns/mnt -- /system/bin/sh -c 'echo' && NSENTER_SH="/system/bin/sh" || NSENTER_SH="$BBX sh"
 
@@ -89,7 +90,8 @@ function background() {
                         BBX="/data/magisk/busybox"
                         DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system 2>/dev/null)
                         $BBX umount -l /dev/magisk/mirror/system 2>/dev/null
-                        $BBX umount -l $DUMMY_SYSTEM 2>/dev/null
+                        $BBX umount -l $DUMMY_SYSTEM 2>/dev/null'
+
                         #mount -o remount,rw,hidepid=2 /proc
                         #mount | grep "/dev/magisk/mirror/system" || {
                             #echo "Universal Hide: Unmounted (/dev/magisk/mirror/system)" >> /cache/magisk.log; } && {
@@ -98,7 +100,7 @@ function background() {
                         #[ "$UNMOUNT_STATUS" == "0" ] || {
                             #echo "Universal Hide: Unmounted (/dev/magisk/dummy/system)" >> /cache/magisk.log; } && {
                             #echo "Universal Hide: Failed to unmount (/dev/magisk/dummy/system)" >> /cache/magisk.log; }
-'
+
                 else
                     $BBX nsenter --target="$APP_PID" --mount=/proc/"${APP_PID}"/ns/mnt -- $NSENTER_SH -c '
                         BBX="/data/magisk/busybox"
@@ -117,7 +119,8 @@ function background() {
                         $BBX umount -l /dev/magisk/mirror/system 2>/dev/null
                         $BBX umount -l /dev/block/loop* 2>/dev/null
                         $BBX umount -l /sbin 2>/dev/null
-                        $BBX umount -l /system/xbin 2>/dev/null
+                        $BBX umount -l /system/xbin 2>/dev/null'
+
                         #mount -o remount,rw,hidepid=2 /proc
                         #for CHECK_MOUNTS in $MNT_DUMMY $MNT_MIRROR $MNT_SYSTEM; do mount | grep $CHECK_MOUNTS && UNMOUNT_STATUS="0"; done
                         #[ "$UNMOUNT_STATUS" == "0" ] || {
@@ -139,7 +142,7 @@ function background() {
                         #mount | grep "/system/xbin" || {
                             #echo "Universal Hide: Unmounted (/system/xbin)" >> /cache/magisk.log; } && {
                             #echo "Universal Hide: Failed to unmount (/system/xbin)" >> /cache/magisk.log; }
-'
+
                 fi
                 unset APP_PID; logcat -c; }
         done; }
@@ -148,7 +151,7 @@ function background() {
 BBX="/data/magisk/busybox"
 
 [ "$(getprop persist.usnf.fingerprint)" == 0 ] || {
-    [ "$(getprop persist.usnf.fingerprint)" == 1 ] && FINGERPRINT="Xiaomi/sagit/sagit:7.1.1/NMF26X/V8.2.17.0.NCACNEC:user/release-keys" || FINGERPRINT=$(getprop persist.usnf.fingerprint)
+    [ "$(getprop persist.usnf.fingerprint)" == 1 ] || [ ! "$(getprop persist.usnf.fingerprint)" ] && FINGERPRINT="Xiaomi/sagit/sagit:7.1.1/NMF26X/V8.2.17.0.NCACNEC:user/release-keys" || FINGERPRINT=$(getprop persist.usnf.fingerprint)
     RESETPROP="resetprop -v -n"
     if [ -f "/sbin/magisk" ]; then RESETPROP="/sbin/magisk $RESETPROP"
     elif [ -f "/data/magisk/magisk" ]; then RESETPROP="/data/magisk/magisk $RESETPROP"
