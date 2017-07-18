@@ -64,6 +64,12 @@ function background() {
             [ "$MAGISK_VERSION" == "13" ] && /sbin/magisk magiskhide --disable
             setprop "persist.magisk.hide" "1"; }
 
+        resetprop --delete init.svc.magisk_pfs
+        resetprop --delete init.svc.magisk_pfsd
+        resetprop --delete init.svc.magisk_service
+        resetprop --delete persist.magisk.hide
+        resetprop --delete ro.magisk.disable
+
         [ -d /sbin_orig ] || {
             echo "*** Universal SafetyNet Fix > Universal Hide: moving and re-linking /sbin binaries" >> /cache/magisk.log
             mount -o rw,remount rootfs /
