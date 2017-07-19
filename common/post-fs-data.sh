@@ -59,16 +59,16 @@ function background() {
     [ "$MAGISK_VERSION" == "12" ] || [ "$MAGISKHIDE" == "0" ] && {
         echo "*** Universal SafetyNet Fix > Running Universal Hide" >> /cache/magisk.log
 
-        [ "$MAGISKHIDE" == "0" ] && {
-            [ "$MAGISK_VERSION" == "12" ] && sh /magisk/.core/magiskhide/disable
-            [ "$MAGISK_VERSION" == "13" ] && /sbin/magisk magiskhide --disable
-            setprop "persist.magisk.hide" "1"; }
+        #[ "$MAGISKHIDE" == "0" ] && {
+            #[ "$MAGISK_VERSION" == "12" ] && sh /magisk/.core/magiskhide/disable
+            #[ "$MAGISK_VERSION" == "13" ] && /sbin/magisk magiskhide --disable
+            #setprop "persist.magisk.hide" "1"; }
 
-        resetprop --delete init.svc.magisk_pfs
-        resetprop --delete init.svc.magisk_pfsd
-        resetprop --delete init.svc.magisk_service
-        resetprop --delete persist.magisk.hide
-        resetprop --delete ro.magisk.disable
+        $RESETPROP --delete init.svc.magisk_pfs
+        $RESETPROP --delete init.svc.magisk_pfsd
+        $RESETPROP --delete init.svc.magisk_service
+        $RESETPROP --delete persist.magisk.hide
+        $RESETPROP --delete ro.magisk.disable
 
         [ -d /sbin_orig ] || {
             echo "*** Universal SafetyNet Fix > Universal Hide: moving and re-linking /sbin binaries" >> /cache/magisk.log
