@@ -30,9 +30,9 @@ function background() {
         MAGISK_VERSION="13"
         HIDELIST_FILE="/magisk/.core/hidelist"; }
 
-    cp -af "{$MODDIR}"/busybox /data/magisk/busybox
+    cp -af "${MODDIR}"/busybox /data/magisk/busybox
 
-    [ "$MAGISK_VERSION" == "12" ] && cp -af "{$MODDIR}"/magiskhide /magisk/.core
+    [ "$MAGISK_VERSION" == "12" ] && cp -af "${MODDIR}"/magiskhide /magisk/.core
 
     get_pid() { $BBX pgrep $1 | $BBX head -n 1; }
 
