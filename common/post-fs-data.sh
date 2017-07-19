@@ -92,11 +92,10 @@ function background() {
             done
             [ "$APP_PID" ] && {
                 if [ "$MAGISKHIDE" == "1" ]; then
-                    $BBX nsenter --target="$APP_PID" --mount=/proc/"${APP_PID}"/ns/mnt -- $NSENTER_SH -c '
-                        BBX="/data/magisk/busybox"
-                        DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system 2>/dev/null)
-                        $BBX umount -l /dev/magisk/mirror/system 2>/dev/null
-                        $BBX umount -l $DUMMY_SYSTEM 2>/dev/null'
+                    $BBX nsenter --target="$APP_PID" --mount=/proc/"${APP_PID}"/ns/mnt -- $NSENTER_SH -c 'BBX="/data/magisk/busybox";
+                        DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system 2>/dev/null);
+                        $BBX umount -l /dev/magisk/mirror/system 2>/dev/null;
+                        $BBX umount -l $DUMMY_SYSTEM 2>/dev/null;'
 
                         #mount -o remount,rw,hidepid=2 /proc
                         #mount | grep "/dev/magisk/mirror/system" || {
@@ -108,24 +107,23 @@ function background() {
                             #echo "Universal Hide: Failed to unmount (/dev/magisk/dummy/system)" >> /cache/magisk.log; }
 
                 else
-                    $BBX nsenter --target="$APP_PID" --mount=/proc/"${APP_PID}"/ns/mnt -- $NSENTER_SH -c '
-                        BBX="/data/magisk/busybox"
-                        MNT_DUMMY=$(cd /dev/magisk/mnt/dummy 2>/dev/null && $BBX find system/*)
-                        MNT_MIRROR=$(cd /dev/magisk/mnt/mirror 2>/dev/null && $BBX find system/*)
-                        MNT_SYSTEM=$(cd /dev/magisk/mnt 2>/dev/null && $BBX find system/*)
-                        DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system 2>/dev/null)
-                        DUMMY=$(cd /dev/magisk/dummy 2>/dev/null && $BBX find system/* | $BBX grep -v "system ")
-                        MODULE=$(cd /magisk && $BBX find */system | $BBX sed "s|.*/system/|/system/|")
-                        $BBX umount -l $MNT_DUMMY 2>/dev/null
-                        $BBX umount -l $MNT_MIRROR 2>/dev/null
-                        $BBX umount -l $MNT_SYSTEM 2>/dev/null
-                        $BBX umount -l $DUMMY_SYSTEM 2>/dev/null
-                        $BBX umount -l $DUMMY 2>/dev/null
-                        $BBX umount -l $MODULE 2>/dev/null
-                        $BBX umount -l /dev/magisk/mirror/system 2>/dev/null
-                        $BBX umount -l /dev/block/loop* 2>/dev/null
-                        $BBX umount -l /sbin 2>/dev/null
-                        $BBX umount -l /system/xbin 2>/dev/null'
+                    $BBX nsenter --target="$APP_PID" --mount=/proc/"${APP_PID}"/ns/mnt -- $NSENTER_SH -c 'BBX="/data/magisk/busybox";
+                        MNT_DUMMY=$(cd /dev/magisk/mnt/dummy 2>/dev/null && $BBX find system/*);
+                        MNT_MIRROR=$(cd /dev/magisk/mnt/mirror 2>/dev/null && $BBX find system/*);
+                        MNT_SYSTEM=$(cd /dev/magisk/mnt 2>/dev/null && $BBX find system/*);
+                        DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system 2>/dev/null);
+                        DUMMY=$(cd /dev/magisk/dummy 2>/dev/null && $BBX find system/* | $BBX grep -v "system ");
+                        MODULE=$(cd /magisk && $BBX find */system | $BBX sed "s|.*/system/|/system/|");
+                        $BBX umount -l $MNT_DUMMY 2>/dev/null;
+                        $BBX umount -l $MNT_MIRROR 2>/dev/null;
+                        $BBX umount -l $MNT_SYSTEM 2>/dev/null;
+                        $BBX umount -l $DUMMY_SYSTEM 2>/dev/null;
+                        $BBX umount -l $DUMMY 2>/dev/null;
+                        $BBX umount -l $MODULE 2>/dev/null;
+                        $BBX umount -l /dev/magisk/mirror/system 2>/dev/null;
+                        $BBX umount -l /dev/block/loop* 2>/dev/null;
+                        $BBX umount -l /sbin 2>/dev/null;
+                        $BBX umount -l /system/xbin 2>/dev/null;'
 
                         #mount -o remount,rw,hidepid=2 /proc
                         #for CHECK_MOUNTS in $MNT_DUMMY $MNT_MIRROR $MNT_SYSTEM; do mount | grep $CHECK_MOUNTS && UNMOUNT_STATUS="0"; done
