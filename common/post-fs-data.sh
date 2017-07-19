@@ -22,6 +22,18 @@ function background() {
 
     setprop "persist.usnf.version" "v2 Beta 5"
 
+    [ "$(getprop magisk.version)" == "12.0" ] && {
+        MAGISK_VERSION="12"
+        HIDELIST_FILE="/magisk/.core/magiskhide/hidelist"; }
+
+    [ "$(magisk -v 2>/dev/null | grep '13..*:MAGISK')" ] && {
+        MAGISK_VERSION="13"
+        HIDELIST_FILE="/magisk/.core/hidelist"; }
+
+    cp -af "{$MODDIR}"/busybox /data/magisk/busybox
+
+    [ "$MAGISK_VERSION" == "12" ] && cp -af "{$MODDIR}"/magiskhide /magisk/.core
+
     get_pid() { $BBX pgrep $1 | $BBX head -n 1; }
 
     INIT_PID=$(get_pid "init")
@@ -35,14 +47,6 @@ function background() {
     done
 
     ZYGOTE_MNT=$($BBX readlink /proc/"$ZYGOTE_PID"/ns/mnt | $BBX sed 's/.*\[/\Zygote.*/' | $BBX sed 's/\]//')
-
-    [ "$(getprop magisk.version)" == "12.0" ] && {
-        MAGISK_VERSION="12"
-        HIDELIST_FILE="/magisk/.core/magiskhide/hidelist"; }
-
-    [ "$(magisk -v 2>/dev/null | grep '13..*:MAGISK')" ] && {
-        MAGISK_VERSION="13"
-        HIDELIST_FILE="/magisk/.core/hidelist"; }
 
     while :; do
         [ "$($BBX grep -i ${ZYGOTE_MNT} '/cache/magisk.log' | $BBX head -n 1)" ] && {

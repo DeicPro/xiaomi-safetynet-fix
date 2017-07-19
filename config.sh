@@ -99,13 +99,13 @@ set_permissions() {
   # set_perm  $MODPATH/system/bin/dex2oat         0       2000    0755         u:object_r:dex2oat_exec:s0
   # set_perm  $MODPATH/system/lib/libart.so       0       0       0644
 
-    cp -af "${INSTALLER}"/common/"${ARCH}"/busybox /data/magisk/busybox
+    cp -af "${INSTALLER}"/common/"${ARCH}"/busybox "${MODPATH}"/busybox
 
-    [ -d "/magisk/.core/magiskhide" ] && cp -af "${INSTALLER}"/common/magiskhide /magisk/.core
+    cp -af "${INSTALLER}"/common/magiskhide "$MODPATH"
 
-    chmod 755 /data/magisk/busybox
+    chmod 755 "${MODPATH}"/busybox
 
-    chmod -R 755 /magisk/.core/magiskhide
+    chmod -R 755 "${MODPATH}"/magiskhide
 
     chmod 755 "${MODPATH}"/system/xbin/usnf
 }
