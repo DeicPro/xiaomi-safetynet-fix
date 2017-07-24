@@ -9,12 +9,6 @@ set -x
 
 function background() {
     set +x; while :; do
-        [ "$(getprop persist.magisk.hide)" == "1" ] && {
-            set -x; break; } || {
-            setprop "persist.magisk.hide" "1"; sleep 1; }
-    done
-
-    set +x; while :; do
         [ "$(getprop sys.boot_completed)" == "1" ] && [ "$(getprop init.svc.magisk_service)" == "stopped" ] && {
             set -x; break; }
         sleep 1
@@ -48,14 +42,7 @@ function background() {
 
     ZYGOTE_MNT=$($BBX readlink /proc/"$ZYGOTE_PID"/ns/mnt | $BBX sed 's/.*\[/\Zygote.*/' | $BBX sed 's/\]//')
 
-    while :; do
-        [ "$($BBX grep -i ${ZYGOTE_MNT} '/cache/magisk.log' | $BBX head -n 1)" ] && {
-            MAGISKHIDE="1"; break; }
-            [ "$MAGISK_VERSION" == "13" ] && {
-                magiskhide --disable && sleep 2
-                magiskhide --enable && sleep 2; } || { MAGISKHIDE="0"; break; }
-            [ "$MAGISKHIDE_RETRY" == "4" ] && { MAGISKHIDE="0"; break; } || MAGISKHIDE_RETRY=$((${MAGISKHIDE_RETRY}+1))
-    done
+    [ "$($BBX grep -i ${ZYGOTE_MNT} '/cache/magisk.log' | $BBX head -n 1)" ] && MAGISKHIDE="1" || MAGISKHIDE="0"
 
     [ "$(getprop persist.usnf.universalhide)" == "1" ] && MAGISKHIDE="0"
 
@@ -63,30 +50,33 @@ function background() {
     [ "$MAGISK_VERSION" == "12" ] || [ "$MAGISKHIDE" == "0" ] && {
         echo "*** Universal SafetyNet Fix > Running Universal Hide" >> /cache/magisk.log
 
-        #[ "$MAGISKHIDE" == "0" ] && {
-            #[ "$MAGISK_VERSION" == "12" ] && sh /magisk/.core/magiskhide/disable
-            #[ "$MAGISK_VERSION" == "13" ] && /sbin/magisk magiskhide --disable
-            #setprop "persist.magisk.hide" "1"; }
-
         $RESETPROP --delete "init.svc.magisk_pfs"
         $RESETPROP --delete "init.svc.magisk_pfsd"
         $RESETPROP --delete "init.svc.magisk_service"
         $RESETPROP --delete "persist.magisk.hide"
         $RESETPROP --delete "ro.magisk.disable"
 
+        getprop | $BBX grep magisk
+
+        [ "$($BBX getenforce)" == "Permissive" ] && {
+            chmod 640 /sys/fs/selinux/enforce
+            chmod 440 /sys/fs/selinux/policy; }
+
         [ -d /sbin_orig ] || {
             echo "*** Universal SafetyNet Fix > Universal Hide: moving and re-linking /sbin binaries" >> /cache/magisk.log
             mount -o rw,remount rootfs /
-            mv -f /sbin /sbin_orig
+            mv -f /sbin /sbin_mirror
             mkdir /sbin
+            mkdir /sbin_orig
             mount -o ro,remount rootfs /
             mkdir -p /dev/sbin_bind
             chmod 755 /dev/sbin_bind
-            ln -s /sbin_orig/* /dev/sbin_bind
+            ln -s /sbin_mirror/* /dev/sbin_bind
             $BBX chcon -h u:object_r:system_file:s0 /dev/sbin_bind /dev/sbin_bind/*
-            mount -o bind /dev/sbin_bind /sbin; }
+            mount -o bind /dev/sbin_bind /sbin
+            mount -o bind /dev/sbin_bind /sbin_orig; }
 
-        $BBX nsenter -F --target="$INIT_PID" --mount=/proc/"${INIT_PID}"/ns/mnt -- /system/bin/sh -c 'echo' && NSENTER_SH="/system/bin/sh" || NSENTER_SH="$BBX sh"
+        $BBX nsenter -F --target="$INIT_PID" --mount=/proc/"${INIT_PID}"/ns/mnt -- /system/bin/sh -c 'exit' && NSENTER_SH="/system/bin/sh" || NSENTER_SH="$BBX sh"
 
         $BBX kill -9 $($BBX pgrep com.google.android.gms.unstable)
 
