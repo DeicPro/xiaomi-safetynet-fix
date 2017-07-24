@@ -129,6 +129,31 @@ elif [ -f "/data/magisk/resetprop" ]; then RESETPROP="/data/magisk/$RESETPROP"; 
     $RESETPROP "ro.build.fingerprint" "$FINGERPRINT"
     $RESETPROP "ro.bootimage.build.fingerprint" "$FINGERPRINT"; }
 
+VERIFYBOOT=$(getprop ro.boot.verifiedbootstate)
+FLASHLOCKED=$(getprop ro.boot.flash.locked)
+VERITYMODE=$(getprop ro.boot.veritymode)
+KNOX1=$(getprop ro.boot.warranty_bit)
+KNOX2=$(getprop ro.warranty_bit)
+DEBUGGABLE=$(getprop ro.debuggable)
+SECURE=$(getprop ro.secure)
+BUILD_TYPE=$(getprop ro.build.type)
+BUILD_TAGS=$(getprop ro.build.tags)
+BUILD_SELINUX=$(getprop ro.build.selinux)
+RELOAD_POLICY=$(getprop selinux.reload_policy)
+
+[ ! -z "$VERIFYBOOT" -a "$VERIFYBOOT" != "green" ] && $RESETPROP "ro.boot.verifiedbootstate" "green"
+[ ! -z "$FLASHLOCKED" -a "$FLASHLOCKED" != "1" ] && $RESETPROP "ro.boot.flash.locked" "1"
+[ ! -z "$VERITYMODE" -a "$VERITYMODE" != "enforcing" ] && $RESETPROP "ro.boot.veritymode" "enforcing"
+[ ! -z "$KNOX1" -a "$KNOX1" != "0" ] && $RESETPROP "ro.boot.warranty_bit" "0"
+[ ! -z "$KNOX2" -a "$KNOX2" != "0" ] && $RESETPROP "ro.warranty_bit" "0"
+[ ! -z "$DEBUGGABLE" -a "$DEBUGGABLE" != "0" ] && $RESETPROP "ro.debuggable" "0"
+[ ! -z "$SECURE" -a "$SECURE" != "1" ] && $RESETPROP "ro.secure" "1"
+[ ! -z "$BUILD_TYPE" -a "$BUILD_TYPE" != "user" ] && $RESETPROP "ro.build.type" "user"
+[ ! -z "$BUILD_TAGS" -a "$BUILD_TAGS" != "release-keys" ] && $RESETPROP "ro.build.tags" "release-keys"
+[ ! -z "$BUILD_SELINUX" -a "$BUILD_SELINUX" != "0" ] && $RESETPROP "ro.build.selinux" "0"
+[ ! -z "$RELOAD_POLICY" -a "$RELOAD_POLICY" != "1" ] && $RESETPROP "selinux.reload_policy" "1"
+
+
 background &
 
 exit
