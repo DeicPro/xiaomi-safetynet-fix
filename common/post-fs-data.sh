@@ -9,7 +9,7 @@ set -x
 
 function background() {
     set +x; while :; do
-        [ "$(getprop sys.boot_completed)" == "1" ] && [ "$(getprop init.svc.magisk_service)" == "stopped" ] && {
+        [ "$(getprop sys.boot_completed)" == "1" ] && {
             set -x; break; }
         sleep 1
     done
