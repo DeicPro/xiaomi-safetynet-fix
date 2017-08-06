@@ -39,15 +39,12 @@ function background() {
     get_pid() { $BBX pgrep $1 | $BBX head -n 1; }
 
     INIT_PID=$(get_pid "init")
+
+    $BBX readlink /proc/$INIT_PID/ns/mnt || {
+        log_print "*** [Universal Hide] Fail: mount namespace is not supported in your kernel"
+        exit; }
+
     ZYGOTE_PID=$(get_pid "-x zygote")
-    [ "$(getprop ro.product.cpu.abi)" ==  "arm64-v8a" ] || [ "$(getprop ro.product.cpu.abi)" ==  "x86_64" ] && ZYGOTE64_PID=$(get_pid "-x zygote64")
-
-    for GET_MNT in $INIT_PID $ZYGOTE_PID $ZYGOTE64_PID; do
-        $BBX readlink /proc/$GET_MNT/ns/mnt || {
-            log_print "*** [Universal Hide] Fail: mount namespace is not supported in your kernel"
-            exit; }
-    done
-
     ZYGOTE_MNT=$($BBX readlink /proc/$ZYGOTE_PID/ns/mnt | $BBX sed 's/.*\[/\Zygote.*/' | $BBX sed 's/\]//')
 
     [ "$($BBX grep -i ${ZYGOTE_MNT} /cache/magisk.log | $BBX head -n 1)" ] && MAGISKHIDE=1 || MAGISKHIDE=0
@@ -56,19 +53,14 @@ function background() {
 
 ### Universal Hide ###
     [ "$MAGISK_VERSION" == "12" ] || [ "$MAGISKHIDE" == "0" ] && {
-        log_print "*** [Universal Hide] Hiding Magisk props & SELinux mode"
-
         $RESETPROP --delete "init.svc.magisk_pfs"
         $RESETPROP --delete "init.svc.magisk_pfsd"
         $RESETPROP --delete "init.svc.magisk_service"
         $RESETPROP --delete "persist.magisk.hide"
         $RESETPROP --delete "ro.magisk.disable"
-
+        $RESETPROP --delete "magisk.restart_pfsd"
+        [ "$MAGISK_VERSION" == "13" ] && $RESETPROP --delete "persist.magisk.busybox"
         getprop | $BBX grep magisk
-
-        [ "$($BBX getenforce)" == "Permissive" ] && {
-            chmod 640 /sys/fs/selinux/enforce
-            chmod 440 /sys/fs/selinux/policy; }
 
         [ -d /sbin_orig ] || {
             log_print "*** [Universal Hide] Moving and re-linking /sbin binaries" >> /cache/magisk.log
@@ -89,19 +81,40 @@ function background() {
         $BBX kill -9 $($BBX pgrep com.google.android.gms.unstable)
 
         log_print "*** [Universal Hide] Starting monitoring process"
-
         logcat -c; logcat -b events -v raw -s am_proc_start | while read LOG_PROC; do
             for HIDELIST in $(cat $HIDELIST_FILE); do
-                [ "$(echo $LOG_PROC | $BBX grep $HIDELIST | $BBX head -n 1)" ] && APP_PID=$(echo $LOG_PROC | $BBX grep $HIDELIST | $BBX head -n 1 | $BBX awk '{ print substr($0,4) }' | $BBX sed 's/,.*//')
+                [ "$(echo $LOG_PROC | $BBX grep -w $HIDELIST | $BBX head -n 1)" ] && {
+                APP_PID=$(echo $LOG_PROC | $BBX grep $HIDELIST | $BBX head -n 1 | $BBX awk '{ print substr($0,4) }' | $BBX sed 's/,.*//')
+                APP_INFO=$(echo $LOG_PROC | $BBX grep $HIDELIST | $BBX head -n 1); }
             done
             [ "$APP_PID" ] && {
-                log_print "*** [Universal Hide] Unmounting Magisk mount points"
-                if [ "$MAGISKHIDE" == "1" ]; then
+                [ "$($BBX getenforce)" == "Permissive" ] && {
+            log_print "*** [Universal Hide] Hiding SELinux mode"
+            chmod 640 /sys/fs/selinux/enforce
+            chmod 440 /sys/fs/selinux/policy; }
+                log_print "*** [Universal Hide] Unmounting Magisk mount points:"
+                log_print "$APP_INFO"
+                if [ "$MAGISK_VERSION" == "12" ] && [ "$MAGISKHIDE" == "0" ]; then
+                    log_print "*** [Universal Hide] Hiding Magisk props"
+                    MAGISK_BBX=$(getprop persist.magisk.busybox)
+                    MAGISK_HIDE=$(getprop persist.magisk.hide)
+                    $RESETPROP --delete "magisk.version"
+                    $RESETPROP --delete "persist.magisk.busybox"
+                    $RESETPROP --delete "persist.magisk.hide"
+                    rm -f /data/property/persist.magisk.busybox
+                    rm -f /data/property/persist.magisk.hide
                     $BBX nsenter -F --target=$APP_PID --mount=/proc/$APP_PID/ns/mnt -- $NSENTER_SH -c '
                         BBX=/data/magisk/busybox
                         DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system 2>/dev/null)
                         $BBX umount -l /dev/magisk/mirror/system 2>/dev/null
-                        $BBX umount -l $DUMMY_SYSTEM 2>/dev/null'
+                        $BBX umount -l $DUMMY_SYSTEM 2>/dev/null
+                        $BBX umount -l /dev/magisk/mirror/vendor 2>/dev/null'
+                    sleep 3
+                    $RESETPROP "magisk.version" "12.0"
+                    $RESETPROP "persist.magisk.busybox" "$MAGISK_BBX"
+                    $RESETPROP "persist.magisk.hide" "$MAGISK_HIDE"
+                    rm -f /data/property/persist.magisk.busybox
+                    rm -f /data/property/persist.magisk.hide
                 else
                     $BBX nsenter -F --target=$APP_PID --mount=/proc/$APP_PID/ns/mnt -- $NSENTER_SH -c '
                         BBX=/data/magisk/busybox
@@ -120,7 +133,8 @@ function background() {
                         $BBX umount -l /dev/magisk/mirror/system 2>/dev/null
                         $BBX umount -l /dev/block/loop* 2>/dev/null
                         $BBX umount -l /sbin 2>/dev/null
-                        $BBX umount -l /system/xbin 2>/dev/null'
+                        $BBX umount -l /system/xbin 2>/dev/null
+                        $BBX umount -l /dev/magisk/mirror/vendor 2>/dev/null'
                 fi
                 unset APP_PID; logcat -c; }
         done; }
@@ -163,7 +177,6 @@ RELOADPOLICY=$(getprop selinux.reload_policy)
 [ "$BUILDTAGS" ] && [ "$BUILDTAGS" != "release-keys" ] && $RESETPROP "ro.build.tags" "release-keys"
 [ "$BUILDSELINUX" ] && [ "$BUILDSELINUX" != "0" ] && $RESETPROP "ro.build.selinux" "0"
 [ "$RELOADPOLICY" ] && [ "$RELOADPOLICY" != "1" ] && $RESETPROP "selinux.reload_policy" "1"
-
 
 background &
 
