@@ -11,18 +11,18 @@ function log_print() {
     log -p i -t Magisk "$1"
 }
 
-log_print "*** [Universal Hide] Checking & hiding props"
-
 set -x
 
 function background() {
+    log_print "*** [Universal Hide] Checking information"
+
     set +x; while :; do
         [ "$(getprop sys.boot_completed)" == "1" ] && {
             set -x; break; }
         sleep 1
     done
 
-    setprop "persist.usnf.version" "v2 Beta 5"
+    setprop "persist.usnf.version" "$($BBX grep version= $MODDIR/module.prop | $BBX sed 's/version=//')"
 
     [ "$(getprop magisk.version)" == "12.0" ] && {
         MAGISK_VERSION=12
@@ -32,7 +32,10 @@ function background() {
         MAGISK_VERSION=13
         HIDELIST_FILE=/magisk/.core/hidelist; }
 
-    cp -af $MODDIR/busybox /data/magisk/busybox
+    mkdir -p /data/magisk
+    cp -af $MODDIR/busybox /data/magisk/busybox || {
+        log_print "*** [Universal Hide] Built-in Busybox was not properly copied"
+        exit; }
 
     [ "$MAGISK_VERSION" == "12" ] && cp -af $MODDIR/magiskhide /magisk/.core
 
@@ -122,19 +125,26 @@ function background() {
                         MNT_MIRROR=$(cd /dev/magisk/mnt/mirror 2>/dev/null && $BBX find system/*)
                         MNT_SYSTEM=$(cd /dev/magisk/mnt 2>/dev/null && $BBX find system/*)
                         DUMMY_SYSTEM=$($BBX find /dev/magisk/dummy/system 2>/dev/null)
-                        DUMMY=$(cd /dev/magisk/dummy 2>/dev/null && $BBX find system/* | $BBX grep -v "system ")
+                        DUMMY_VENDOR=$($BBX find /dev/magisk/dummy/vendor 2>/dev/null)
+                        DUMMY_TO_SYSTEM=$(cd /dev/magisk/dummy 2>/dev/null && $BBX find system/* | $BBX grep -v "system ")
+                        DUMMY_TO_VENDOR=$(cd /dev/magisk/dummy 2>/dev/null && $BBX find vendor/* | $BBX grep -v "vendor ")
                         MODULE=$(cd /magisk && $BBX find */system | $BBX sed "s|.*/system/|/system/|")
                         $BBX umount -l $MNT_DUMMY 2>/dev/null
                         $BBX umount -l $MNT_MIRROR 2>/dev/null
                         $BBX umount -l $MNT_SYSTEM 2>/dev/null
                         $BBX umount -l $DUMMY_SYSTEM 2>/dev/null
-                        $BBX umount -l $DUMMY 2>/dev/null
+                        $BBX umount -l $DUMMY_VENDOR 2>/dev/null
+                        $BBX umount -l $DUMMY_TO_SYSTEM 2>/dev/null
+                        $BBX umount -l $DUMMY_TO_VENDOR 2>/dev/null
                         $BBX umount -l $MODULE 2>/dev/null
                         $BBX umount -l /dev/magisk/mirror/system 2>/dev/null
                         $BBX umount -l /dev/block/loop* 2>/dev/null
                         $BBX umount -l /sbin 2>/dev/null
                         $BBX umount -l /system/xbin 2>/dev/null
-                        $BBX umount -l /dev/magisk/mirror/vendor 2>/dev/null'
+                        $BBX umount -l /dev/magisk/mirror/vendor 2>/dev/null
+                        $BBX umount -l /dev/magisk/mirror/bin 2>/dev/null
+                        $BBX umount -l /sbin_orig 2>/dev/null
+                        $BBX umount -l /dev/magisk/dummy/system/etc/hosts'
                 fi
                 unset APP_PID; logcat -c; }
         done; }
@@ -149,10 +159,15 @@ elif [ -f "/data/magisk/magisk" ]; then RESETPROP="/data/magisk/magisk $RESETPRO
 elif [ -f "/magisk/.core/bin/resetprop" ]; then RESETPROP=/magisk/.core/bin/$RESETPROP
 elif [ -f "/data/magisk/resetprop" ]; then RESETPROP=/data/magisk/$RESETPROP; fi
 
+log_print "*** [Universal Hide] Version: $(getprop persist.usnf.version)"
+
 [ "$(getprop persist.usnf.fingerprint)" == 0 ] || {
     [ "$(getprop persist.usnf.fingerprint)" == 1 ] || [ ! "$(getprop persist.usnf.fingerprint)" ] && FINGERPRINT=Xiaomi/sagit/sagit:7.1.1/NMF26X/V8.2.17.0.NCACNEC:user/release-keys || FINGERPRINT=$(getprop persist.usnf.fingerprint)
+    log_print "*** [Universal Hide] Changing build fingerprint value"
     $RESETPROP "ro.build.fingerprint" "$FINGERPRINT"
     $RESETPROP "ro.bootimage.build.fingerprint" "$FINGERPRINT"; }
+
+log_print "*** [Universal Hide] Hiding dangerous props"
 
 VERIFYBOOT=$(getprop ro.boot.verifiedbootstate)
 FLASHLOCKED=$(getprop ro.boot.flash.locked)
